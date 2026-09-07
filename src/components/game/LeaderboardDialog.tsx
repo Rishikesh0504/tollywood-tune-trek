@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,14 +9,14 @@ import {
 import {
   Trophy,
   Award,
-  Calendar,
-  CheckCircle2,
   UserCheck,
   Edit3,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import {
-  loadLeaderboard,
-  addOrUpdateLeaderboardEntry,
+  fetchGlobalLeaderboard,
+  syncScoreToSupabase,
   PLAYER_NAME_KEY,
   type LeaderboardEntry,
   type GameStats,
@@ -39,7 +39,9 @@ export function LeaderboardDialog({
   lastAttemptDuration,
   lastEra,
 }: Props) {
+  const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(false);
   const [timeframe, setTimeframe] = useState<Timeframe>("weekly");
   const [name, setName] = useState(() => {
     if (typeof window !== "undefined") {
@@ -55,47 +57,38 @@ export function LeaderboardDialog({
     return "";
   });
 
-  const pointsToPost =
-    lastPointsEarned && lastPointsEarned > 0
-      ? lastPointsEarned
-      : stats.totalScore;
-  const songLabel = lastSongTitle ?? `${stats.wins} Solved`;
-  const eraLabel = lastEra ?? "All Eras";
-  const durationLabel = lastAttemptDuration ?? 0.1;
+  const loadData = useCallback(async (period: Timeframe) => {
+    setLoading(true);
+    const data = await fetchGlobalLeaderboard(period);
+    setEntries(data);
+    setLoading(false);
+  }, []);
 
-  // Initial load and live auto-sync if name is already set
+  // Fetch when timeframe changes or whenever the modal opens
   useEffect(() => {
-    if (savedName && pointsToPost > 0) {
-      const updated = addOrUpdateLeaderboardEntry({
-        name: savedName,
-        points: pointsToPost,
-        attemptLength: durationLabel,
-        era: eraLabel,
-        songTitle: songLabel,
-      });
-      setEntries(updated);
-    } else {
-      setEntries(loadLeaderboard());
+    if (open) {
+      loadData(timeframe);
     }
-  }, [savedName, pointsToPost, songLabel, eraLabel, durationLabel]);
+  }, [timeframe, open, loadData]);
 
-  // Filter entries based on the selected timeframe
-  const filteredEntries = useMemo(() => {
-    const now = Date.now();
-    const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
-    const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
+  // Sync current user's score to Supabase if nickname exists
+  useEffect(() => {
+    if (savedName && stats.totalScore > 0) {
+      syncScoreToSupabase({
+        name: savedName,
+        points: stats.totalScore,
+        attemptLength: lastAttemptDuration ?? 0.1,
+        era: lastEra ?? "All Eras",
+        songTitle: lastSongTitle ?? `${stats.wins} Solved`,
+      }).then(() => {
+        if (open) loadData(timeframe);
+      });
+    }
+  }, [savedName, stats.totalScore, open, timeframe, loadData]);
 
-    return entries.filter((entry) => {
-      const entryTime = entry.timestamp || now; // fallback for older entries
-      if (timeframe === "weekly") return now - entryTime <= oneWeekMs;
-      if (timeframe === "monthly") return now - entryTime <= oneMonthMs;
-      return true;
-    });
-  }, [entries, timeframe]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || pointsToPost <= 0) return;
+    if (!name.trim() || stats.totalScore <= 0) return;
 
     const trimmed = name.trim();
     if (typeof window !== "undefined") {
@@ -104,19 +97,27 @@ export function LeaderboardDialog({
     setSavedName(trimmed);
     setIsEditingName(false);
 
-    const updated = addOrUpdateLeaderboardEntry({
+    await syncScoreToSupabase({
       name: trimmed,
-      points: pointsToPost,
-      attemptLength: durationLabel,
-      era: eraLabel,
-      songTitle: songLabel,
-      date: "Just now",
+      points: stats.totalScore,
+      attemptLength: lastAttemptDuration ?? 0.1,
+      era: lastEra ?? "All Eras",
+      songTitle: lastSongTitle ?? `${stats.wins} Solved`,
     });
-    setEntries(updated);
+
+    await loadData(timeframe);
   };
 
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (isOpen) {
+          loadData(timeframe);
+        }
+      }}
+    >
       <DialogTrigger
         aria-label="View Leaderboard"
         className="flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-3 py-2 text-sm font-bold text-muted-foreground transition-colors hover:text-gold"
@@ -127,8 +128,21 @@ export function LeaderboardDialog({
 
       <DialogContent className="max-h-[90vh] overflow-y-auto border-border bg-surface sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl font-extrabold">
-            <Trophy className="size-6 text-gold" /> Tollywood Hall of Fame
+          <DialogTitle className="flex items-center justify-between text-2xl font-extrabold pr-6">
+            <span className="flex items-center gap-2">
+              <Trophy className="size-6 text-gold" /> Tollywood Hall of Fame
+            </span>
+            <button
+              type="button"
+              onClick={() => loadData(timeframe)}
+              disabled={loading}
+              title="Refresh Leaderboard"
+              className="text-muted-foreground hover:text-gold transition disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`size-4 ${loading ? "animate-spin text-gold" : ""}`}
+              />
+            </button>
           </DialogTitle>
         </DialogHeader>
 
@@ -148,14 +162,14 @@ export function LeaderboardDialog({
           </div>
         </div>
 
-        {/* Username Registration or Auto-Sync Status */}
+        {/* Nickname Form */}
         {!savedName || isEditingName ? (
           <form
             onSubmit={handleSubmit}
             className="space-y-2 rounded-xl border border-gold/40 bg-gold/5 p-3"
           >
             <p className="text-xs font-semibold text-gold">
-              Set your nickname for live score updates:
+              Set your nickname for global ranking:
             </p>
             <div className="flex gap-2">
               <input
@@ -183,7 +197,7 @@ export function LeaderboardDialog({
               <span className="font-bold text-foreground">{savedName}</span>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
                 <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />{" "}
-                Live Syncing
+                Global Live
               </span>
             </div>
             <button
@@ -215,12 +229,17 @@ export function LeaderboardDialog({
         {/* High Score Table */}
         <div className="space-y-2">
           <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface-raised">
-            {filteredEntries.length === 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-10 text-muted-foreground gap-2 text-xs">
+                <Loader2 className="size-4 animate-spin text-gold" /> Loading
+                global scores...
+              </div>
+            ) : entries.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 No scores recorded for this period yet.
               </div>
             ) : (
-              filteredEntries.map((entry, idx) => (
+              entries.map((entry, idx) => (
                 <div
                   key={entry.id}
                   className="flex items-center justify-between px-3.5 py-2.5 text-sm"

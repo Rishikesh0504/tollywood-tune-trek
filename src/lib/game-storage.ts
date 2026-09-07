@@ -1,3 +1,5 @@
+import { supabase } from "./supabase";
+
 export interface LeaderboardEntry {
   id: string;
   name: string;
@@ -6,7 +8,7 @@ export interface LeaderboardEntry {
   era: string;
   songTitle: string;
   date: string;
-  timestamp: number; // Unix timestamp for Weekly/Monthly filtering
+  updated_at?: string;
 }
 
 export interface GameStats {
@@ -20,7 +22,6 @@ export interface GameStats {
 }
 
 const STATS_KEY = "gtt-stats-v2";
-const LEADERBOARD_KEY = "gtt-leaderboard-v4";
 export const PLAYER_NAME_KEY = "gtt-player-name";
 
 export const emptyStats: GameStats = {
@@ -87,69 +88,87 @@ export function recordResult(
   };
 }
 
-export function loadLeaderboard(): LeaderboardEntry[] {
-  if (typeof window === "undefined") return [];
+export async function fetchGlobalLeaderboard(
+  timeframe: "weekly" | "monthly" | "all",
+): Promise<LeaderboardEntry[]> {
   try {
-    const raw = window.localStorage.getItem(LEADERBOARD_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw);
-  } catch {
+    let query = supabase
+      .from("leaderboard")
+      .select("id, name, points, attempt_length, era, song_title, updated_at")
+      .order("points", { ascending: false })
+      .limit(50);
+
+    const now = new Date();
+    if (timeframe === "weekly") {
+      const oneWeekAgo = new Date(
+        now.getTime() - 7 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      query = query.gte("updated_at", oneWeekAgo);
+    } else if (timeframe === "monthly") {
+      const oneMonthAgo = new Date(
+        now.getTime() - 30 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      query = query.gte("updated_at", oneMonthAgo);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error("❌ Supabase fetch error:", error.message);
+      return [];
+    }
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      points: row.points,
+      attemptLength: Number(row.attempt_length),
+      era: row.era,
+      songTitle: row.song_title,
+      date: new Date(row.updated_at).toLocaleDateString("en-IN", {
+        month: "short",
+        day: "numeric",
+      }),
+      updated_at: row.updated_at,
+    }));
+  } catch (err) {
+    console.error("Leaderboard fetch failed:", err);
     return [];
   }
 }
 
-// Automatically inserts new players or updates existing players with their latest score
-export function addOrUpdateLeaderboardEntry(
-  entry: Omit<LeaderboardEntry, "id" | "timestamp" | "date"> & {
-    date?: string;
-  },
-): LeaderboardEntry[] {
-  const current = loadLeaderboard();
-  const now = Date.now();
-  const normalizedName = entry.name.trim();
+export async function syncScoreToSupabase(entry: {
+  name: string;
+  points: number;
+  attemptLength: number;
+  era: string;
+  songTitle: string;
+}) {
+  if (!entry.name.trim()) return;
 
-  const existingIndex = current.findIndex(
-    (e) => e.name.trim().toLowerCase() === normalizedName.toLowerCase(),
-  );
+  console.log("🚀 Syncing score to Supabase for:", entry.name, entry.points);
 
-  let updated: LeaderboardEntry[];
+  try {
+    const { data, error } = await supabase
+      .from("leaderboard")
+      .upsert(
+        {
+          name: entry.name.trim(),
+          points: entry.points,
+          attempt_length: entry.attemptLength,
+          era: entry.era,
+          song_title: entry.songTitle,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "name" },
+      )
+      .select();
 
-  if (existingIndex !== -1) {
-    // Update existing user entry
-    const existing = current[existingIndex];
-    const updatedEntry: LeaderboardEntry = {
-      ...existing,
-      name: normalizedName,
-      points: Math.max(existing.points, entry.points),
-      attemptLength: entry.attemptLength,
-      era: entry.era,
-      songTitle: entry.songTitle,
-      date: entry.date ?? "Just now",
-      timestamp: now,
-    };
-    updated = [...current];
-    updated[existingIndex] = updatedEntry;
-  } else {
-    // Add new user entry
-    const newEntry: LeaderboardEntry = {
-      ...entry,
-      name: normalizedName,
-      id: now.toString(),
-      date: entry.date ?? "Just now",
-      timestamp: now,
-    };
-    updated = [newEntry, ...current];
+    if (error) {
+      console.error("❌ Supabase Insert Error:", error.message, error.details);
+    } else {
+      console.log("✅ Supabase Sync Succeeded!", data);
+    }
+  } catch (err) {
+    console.error("Failed to sync score:", err);
   }
-
-  updated.sort((a, b) => b.points - a.points);
-  const sliced = updated.slice(0, 50);
-
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(sliced));
-  }
-  return sliced;
-}
-
-export function winPercentage(stats: GameStats) {
-  return stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
 }
