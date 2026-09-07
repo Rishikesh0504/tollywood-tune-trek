@@ -36,7 +36,7 @@ import {
   loadStats,
   recordResult,
   saveStats,
-  addOrUpdateLeaderboardEntry,
+  syncScoreToSupabase,
   PLAYER_NAME_KEY,
   type GameStats,
 } from "@/lib/game-storage";
@@ -259,7 +259,7 @@ export function GuessGame() {
         if (won && typeof window !== "undefined") {
           const savedName = localStorage.getItem(PLAYER_NAME_KEY);
           if (savedName && song) {
-            addOrUpdateLeaderboardEntry({
+            void syncScoreToSupabase({
               name: savedName,
               points: next.totalScore,
               attemptLength: REVEAL_STEPS[attemptIndex] ?? 0.1,
