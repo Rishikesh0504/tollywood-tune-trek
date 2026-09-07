@@ -9,7 +9,6 @@ import {
   Play,
   RotateCcw,
   Search,
-  Shuffle,
   SkipForward,
   Star,
   Volume1,
@@ -435,7 +434,7 @@ export function GuessGame() {
       {/* Main Layout: Game on Left (2 cols), Result on Right (1 col) */}
       <div className="mt-5 grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
         {/* Left Column: Game Player & Inputs */}
-        <div className="lg:col-span-2">
+        <div className="relative z-20 lg:col-span-2">
           <motion.section
             key={shake}
             animate={shake ? { x: [0, -9, 8, -5, 0] } : { x: 0 }}
@@ -516,7 +515,7 @@ export function GuessGame() {
             {/* Predictive Autocomplete Search */}
             {status === "playing" && (
               <div className="space-y-3">
-                <div className="relative">
+                <div className="relative z-30">
                   <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     value={query}
@@ -547,7 +546,7 @@ export function GuessGame() {
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
-                        className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-surface shadow-card"
+                        className="absolute left-0 right-0 z-50 mt-2 max-h-56 overflow-y-auto rounded-xl border border-border bg-surface shadow-2xl"
                       >
                         {suggestions.map((s, i) => (
                           <li key={s.id}>
@@ -585,16 +584,6 @@ export function GuessGame() {
                   >
                     <SkipForward className="mr-1.5 inline size-4" />
                     Skip snippet
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={shuffleTrack}
-                    className="flex h-13 items-center justify-center gap-1.5 rounded-xl border border-border bg-surface-raised px-4 py-3.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-                    title="Shuffle another track"
-                  >
-                    <Shuffle className="size-4" />
-                    <span>Shuffle</span>
                   </button>
 
                   <button
@@ -643,7 +632,7 @@ export function GuessGame() {
         </div>
 
         {/* Right Column: Song Reveal Card (or Mystery placeholder during play) */}
-        <div className="lg:col-span-1">
+        <div className="relative z-10 lg:col-span-1">
           <AnimatePresence mode="wait">
             {status !== "playing" ? (
               <motion.section
