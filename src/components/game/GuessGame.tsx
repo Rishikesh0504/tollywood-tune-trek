@@ -37,6 +37,8 @@ import {
   loadStats,
   recordResult,
   saveStats,
+  addOrUpdateLeaderboardEntry,
+  PLAYER_NAME_KEY,
   type GameStats,
 } from "@/lib/game-storage";
 
@@ -61,7 +63,7 @@ export function GuessGame() {
   const [highlight, setHighlight] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [volume, setVolume] = useState(0.8);
+  const [volume, setVolume] = useState(0.5);
   const [muted, setMuted] = useState(false);
   const [stats, setStats] = useState<GameStats>(emptyStats);
   const [shake, setShake] = useState(0);
@@ -253,31 +255,44 @@ export function GuessGame() {
           day: todayKey(),
         });
         saveStats(next);
+
+        // Live background update using cumulative total points
+        if (won && typeof window !== "undefined") {
+          const savedName = localStorage.getItem(PLAYER_NAME_KEY);
+          if (savedName && song) {
+            addOrUpdateLeaderboardEntry({
+              name: savedName,
+              points: next.totalScore,
+              attemptLength: REVEAL_STEPS[attemptIndex] ?? 0.1,
+              era:
+                CATEGORIES.find((c) => c.id === category)?.label ?? "All Eras",
+              songTitle: song.title,
+            });
+          }
+        }
+
         return next;
       });
 
-      if (won) {
-        const audio = audioRef.current;
-        if (audio) {
-          if (rafRef.current) cancelAnimationFrame(rafRef.current);
-          audio.currentTime = 0;
-          audio.volume = muted ? 0 : volume;
-          void audio
-            .play()
-            .then(() => {
-              setPlaying(true);
-              rafRef.current = requestAnimationFrame(tick);
-            })
-            .catch((err) => {
-              console.warn("Autoplay blocked by browser:", err);
-              setPlaying(false);
-            });
-        }
-      } else {
-        stopAudio();
+      // Autoplay full song on completion (both Won and Lost/Skipped)
+      const audio = audioRef.current;
+      if (audio) {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        audio.currentTime = 0;
+        audio.volume = muted ? 0 : volume;
+        void audio
+          .play()
+          .then(() => {
+            setPlaying(true);
+            rafRef.current = requestAnimationFrame(tick);
+          })
+          .catch((err) => {
+            console.warn("Autoplay blocked by browser:", err);
+            setPlaying(false);
+          });
       }
     },
-    [stopAudio, muted, volume, tick],
+    [muted, volume, tick, song, category],
   );
 
   const submitGuess = useCallback(
@@ -365,7 +380,9 @@ export function GuessGame() {
             stats={stats}
             lastPointsEarned={pointsEarned}
             lastSongTitle={song.title}
-            lastAttemptDuration={unlocked}
+            lastAttemptDuration={
+              REVEAL_STEPS[Math.max(0, attempts.length - 1)] ?? 0.1
+            }
             lastEra={CATEGORIES.find((c) => c.id === category)?.label}
           />
 

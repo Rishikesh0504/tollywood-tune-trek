@@ -2,10 +2,11 @@ export interface LeaderboardEntry {
   id: string;
   name: string;
   points: number;
-  attemptLength: number; // e.g., 0.1, 0.5, 2...
+  attemptLength: number;
   era: string;
   songTitle: string;
   date: string;
+  timestamp: number; // Unix timestamp for Weekly/Monthly filtering
 }
 
 export interface GameStats {
@@ -15,11 +16,12 @@ export interface GameStats {
   streak: number;
   bestStreak: number;
   lastPlayedDay: string | null;
-  distribution: number[]; // 5 indices for 0.1s, 0.5s, 2s, 8s, 15s
+  distribution: number[];
 }
 
 const STATS_KEY = "gtt-stats-v2";
-const LEADERBOARD_KEY = "gtt-leaderboard-v2";
+const LEADERBOARD_KEY = "gtt-leaderboard-v4";
+export const PLAYER_NAME_KEY = "gtt-player-name";
 
 export const emptyStats: GameStats = {
   played: 0,
@@ -30,14 +32,6 @@ export const emptyStats: GameStats = {
   lastPlayedDay: null,
   distribution: [0, 0, 0, 0, 0],
 };
-
-const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
-  { id: "1", name: "ChiranjeeviFan99", points: 100, attemptLength: 0.1, era: "Vintage Golden Era", songTitle: "Abbanee Teeyani Dhebba", date: "Today" },
-  { id: "2", name: "MaheshBabuCult", points: 100, attemptLength: 0.1, era: "Latest Bangers", songTitle: "Kurchi Madathapetti", date: "Today" },
-  { id: "3", name: "TarakArmy", points: 50, attemptLength: 0.5, era: "All Eras (Shuffle)", songTitle: "Fear Song", date: "Yesterday" },
-  { id: "4", name: "PrabhasDevotee", points: 25, attemptLength: 2, era: "Modern Hits", songTitle: "Cinema Choopistha Mava", date: "Yesterday" },
-  { id: "5", name: "DSP_Maniac", points: 10, attemptLength: 8, era: "90s & 2000s Nostalgia", songTitle: "Ringa Ringa", date: "2 days ago" },
-];
 
 export function loadStats(): GameStats {
   if (typeof window === "undefined") return emptyStats;
@@ -64,11 +58,17 @@ export function saveStats(stats: GameStats) {
 
 export function recordResult(
   prev: GameStats,
-  outcome: { won: boolean; attemptIndex: number; pointsEarned: number; day: string },
+  outcome: {
+    won: boolean;
+    attemptIndex: number;
+    pointsEarned: number;
+    day: string;
+  },
 ): GameStats {
   const distribution = [...prev.distribution];
   if (outcome.won && outcome.attemptIndex < distribution.length) {
-    distribution[outcome.attemptIndex] = (distribution[outcome.attemptIndex] ?? 0) + 1;
+    distribution[outcome.attemptIndex] =
+      (distribution[outcome.attemptIndex] ?? 0) + 1;
   }
 
   let streak = 0;
@@ -88,24 +88,66 @@ export function recordResult(
 }
 
 export function loadLeaderboard(): LeaderboardEntry[] {
-  if (typeof window === "undefined") return DEFAULT_LEADERBOARD;
+  if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(LEADERBOARD_KEY);
-    if (!raw) return DEFAULT_LEADERBOARD;
+    if (!raw) return [];
     return JSON.parse(raw);
   } catch {
-    return DEFAULT_LEADERBOARD;
+    return [];
   }
 }
 
-export function addLeaderboardEntry(entry: Omit<LeaderboardEntry, "id">): LeaderboardEntry[] {
+// Automatically inserts new players or updates existing players with their latest score
+export function addOrUpdateLeaderboardEntry(
+  entry: Omit<LeaderboardEntry, "id" | "timestamp" | "date"> & {
+    date?: string;
+  },
+): LeaderboardEntry[] {
   const current = loadLeaderboard();
-  const newEntry: LeaderboardEntry = { ...entry, id: Date.now().toString() };
-  const updated = [newEntry, ...current].sort((a, b) => b.points - a.points).slice(0, 25);
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(updated));
+  const now = Date.now();
+  const normalizedName = entry.name.trim();
+
+  const existingIndex = current.findIndex(
+    (e) => e.name.trim().toLowerCase() === normalizedName.toLowerCase(),
+  );
+
+  let updated: LeaderboardEntry[];
+
+  if (existingIndex !== -1) {
+    // Update existing user entry
+    const existing = current[existingIndex];
+    const updatedEntry: LeaderboardEntry = {
+      ...existing,
+      name: normalizedName,
+      points: Math.max(existing.points, entry.points),
+      attemptLength: entry.attemptLength,
+      era: entry.era,
+      songTitle: entry.songTitle,
+      date: entry.date ?? "Just now",
+      timestamp: now,
+    };
+    updated = [...current];
+    updated[existingIndex] = updatedEntry;
+  } else {
+    // Add new user entry
+    const newEntry: LeaderboardEntry = {
+      ...entry,
+      name: normalizedName,
+      id: now.toString(),
+      date: entry.date ?? "Just now",
+      timestamp: now,
+    };
+    updated = [newEntry, ...current];
   }
-  return updated;
+
+  updated.sort((a, b) => b.points - a.points);
+  const sliced = updated.slice(0, 50);
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(sliced));
+  }
+  return sliced;
 }
 
 export function winPercentage(stats: GameStats) {
