@@ -39,7 +39,7 @@ export async function fetchTeluguTrack(
     }
 
     if (!track || !track.previewUrl) {
-      console.warn(`No preview found on iTunes for "${songTitle}"`);
+      console.warn("No audio preview found on CDN");
       return null;
     }
 

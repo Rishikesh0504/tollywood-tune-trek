@@ -48,6 +48,7 @@ type Attempt =
 type Status = "playing" | "won" | "lost";
 
 const FULL = REVEAL_STEPS[REVEAL_STEPS.length - 1] ?? 15;
+const AUDIO_START_OFFSET = 2;
 
 function unlockedFor(attemptCount: number) {
   return REVEAL_STEPS[Math.min(attemptCount, MAX_ATTEMPTS - 1)] ?? FULL;
@@ -101,7 +102,7 @@ export function GuessGame() {
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
-      audio.currentTime = 0;
+      audio.currentTime = AUDIO_START_OFFSET;
     }
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
@@ -171,11 +172,10 @@ export function GuessGame() {
       setLoadingAudio(false);
 
       if (result?.audioUrl) {
-        console.log(`🎵 [iTunes CDN] ${result.title} (${result.album})`);
         setLiveAudioUrl(result.audioUrl);
         setTrackMeta(result);
       } else {
-        console.warn(`⚠️ Could not find audio for: ${song.title}`);
+        console.warn("⚠️ Preview audio unavailable for current track");
       }
     });
 
@@ -187,21 +187,45 @@ export function GuessGame() {
   const tick = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    setProgress(audio.currentTime);
+
+    // Track elapsed time relative to the 2s offset so the waveform starts at 0s
+    const elapsed = Math.max(0, audio.currentTime - AUDIO_START_OFFSET);
+    setProgress(elapsed);
 
     // Stop at snippet mark only during active guessing
     if (
       statusRef.current === "playing" &&
-      audio.currentTime >= unlockedRef.current - 0.02
+      audio.currentTime >= AUDIO_START_OFFSET + unlockedRef.current - 0.02
     ) {
       audio.pause();
-      audio.currentTime = 0;
+      audio.currentTime = AUDIO_START_OFFSET;
       setPlaying(false);
       setProgress(0);
       rafRef.current = null;
       return;
     }
     rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  // Force audio to stop if it ever exceeds the allowed snippet duration
+  const enforceAudioBounds = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (statusRef.current === "playing") {
+      const maxAllowed = AUDIO_START_OFFSET + unlockedRef.current;
+
+      // If playing past the allowed window or dragged before start offset:
+      if (
+        audio.currentTime >= maxAllowed ||
+        audio.currentTime < AUDIO_START_OFFSET - 0.1
+      ) {
+        audio.pause();
+        audio.currentTime = AUDIO_START_OFFSET;
+        setPlaying(false);
+        setProgress(0);
+      }
+    }
   }, []);
 
   const togglePlay = useCallback(() => {
@@ -211,7 +235,7 @@ export function GuessGame() {
       stopAudio();
       return;
     }
-    audio.currentTime = 0;
+    audio.currentTime = AUDIO_START_OFFSET;
     audio.volume = muted ? 0 : volume;
     void audio
       .play()
@@ -221,6 +245,35 @@ export function GuessGame() {
       })
       .catch(() => setPlaying(false));
   }, [playing, stopAudio, tick, muted, volume, liveAudioUrl]);
+
+  // Lock mobile Control Center / notification shade and prevent scrub exploits
+  useEffect(() => {
+    if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
+
+    if (status === "playing") {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: "Mystery Track",
+        artist: "Guess That Tollywood",
+        album: "Tollywood Tune Trek",
+      });
+
+      navigator.mediaSession.setActionHandler("play", () => togglePlay());
+      navigator.mediaSession.setActionHandler("pause", () => stopAudio());
+
+      // Disable lock screen seekbars
+      navigator.mediaSession.setActionHandler("seekto", null);
+      navigator.mediaSession.setActionHandler("seekforward", null);
+      navigator.mediaSession.setActionHandler("seekbackward", null);
+      navigator.mediaSession.setActionHandler("previoustrack", null);
+      navigator.mediaSession.setActionHandler("nexttrack", null);
+    } else if (song) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        artist: song.singers,
+        album: song.movie,
+      });
+    }
+  }, [status, song, togglePlay, stopAudio]);
 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -277,7 +330,7 @@ export function GuessGame() {
       const audio = audioRef.current;
       if (audio) {
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        audio.currentTime = 0;
+        audio.currentTime = AUDIO_START_OFFSET;
         audio.volume = muted ? 0 : volume;
         void audio
           .play()
@@ -339,6 +392,16 @@ export function GuessGame() {
           src={liveAudioUrl}
           preload="auto"
           onEnded={stopAudio}
+          onTimeUpdate={() => {
+            enforceAudioBounds();
+            if (audioRef.current && statusRef.current === "playing") {
+              setProgress(
+                Math.max(0, audioRef.current.currentTime - AUDIO_START_OFFSET),
+              );
+            }
+          }}
+          onSeeking={enforceAudioBounds}
+          onPlay={enforceAudioBounds}
         />
       )}
 
