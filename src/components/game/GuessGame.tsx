@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -788,6 +789,9 @@ export function GuessGame() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Vercel Analytics */}
+      <Analytics />
     </div>
   );
 }
