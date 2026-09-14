@@ -1,12 +1,15 @@
+import { memo } from "react";
 import { REVEAL_STEPS, POINTS_BY_STEP } from "@/data/songs";
-import { motion } from "framer-motion";
 import { Lock } from "lucide-react";
 
 const TOTAL: number = REVEAL_STEPS[REVEAL_STEPS.length - 1] ?? 15;
 const BAR_COUNT = 56;
 
 const HEIGHTS = Array.from({ length: BAR_COUNT }, (_, i) => {
-  const wave = Math.sin(i * 0.55) * 0.32 + Math.sin(i * 1.7) * 0.18 + Math.cos(i * 0.23) * 0.2;
+  const wave =
+    Math.sin(i * 0.55) * 0.32 +
+    Math.sin(i * 1.7) * 0.18 +
+    Math.cos(i * 0.23) * 0.2;
   return 26 + Math.abs(wave) * 74;
 });
 
@@ -16,7 +19,11 @@ interface Props {
   playing: boolean;
 }
 
-export function SnippetWave({ unlocked, progress, playing }: Props) {
+export const SnippetWave = memo(function SnippetWave({
+  unlocked,
+  progress,
+  playing,
+}: Props) {
   const unlockedRatio = unlocked / TOTAL;
   const playedRatio = Math.min(progress / TOTAL, unlockedRatio);
 
@@ -37,31 +44,31 @@ export function SnippetWave({ unlocked, progress, playing }: Props) {
           const isUnlocked = pos <= unlockedRatio;
           const isPlayed = pos <= playedRatio;
           return (
-            <motion.span
+            <span
               key={i}
-              className="flex-1 rounded-full"
+              className={`flex-1 rounded-full transition-colors duration-75 ${
+                playing && isUnlocked ? "animate-pulse" : ""
+              }`}
               style={{
+                height: `${h}%`,
                 background: isPlayed
                   ? "var(--gradient-hot)"
                   : isUnlocked
                     ? "color-mix(in oklab, var(--gold) 48%, transparent)"
                     : "color-mix(in oklab, var(--muted-foreground) 20%, transparent)",
               }}
-              animate={{
-                height: playing && isUnlocked ? [`${h * 0.45}%`, `${h}%`, `${h * 0.6}%`] : `${h}%`,
-              }}
-              transition={
-                playing && isUnlocked
-                  ? { duration: 0.7 + (i % 5) * 0.11, repeat: Infinity, ease: "easeInOut" }
-                  : { duration: 0.25 }
-              }
             />
           );
         })}
-        <motion.span
-          className="pointer-events-none absolute inset-y-0 w-px bg-gold-soft"
-          animate={{ left: `${playedRatio * 100}%`, opacity: playing ? 1 : 0 }}
-          transition={{ duration: 0.1, ease: "linear" }}
+
+        {/* 0ms Latency Playhead Line */}
+        <div
+          className="pointer-events-none absolute inset-y-0 w-0.5 bg-gold shadow-[0_0_8px_rgba(255,190,0,0.8)]"
+          style={{
+            left: `${playedRatio * 100}%`,
+            opacity: playing ? 1 : 0,
+            transition: "opacity 120ms ease",
+          }}
         />
       </div>
 
@@ -74,11 +81,17 @@ export function SnippetWave({ unlocked, progress, playing }: Props) {
             <div
               key={step}
               className={`rounded-lg py-1.5 text-center transition-colors ${
-                isOpen ? "bg-hot text-primary-foreground shadow-glow" : "border border-border bg-surface-raised text-muted-foreground"
+                isOpen
+                  ? "bg-hot text-primary-foreground shadow-glow"
+                  : "border border-border bg-surface-raised text-muted-foreground"
               }`}
             >
               <p className="text-xs font-bold">{step}s</p>
-              <p className={`text-[10px] font-semibold ${isOpen ? "text-primary-foreground/90" : "text-gold"}`}>
+              <p
+                className={`text-[10px] font-semibold ${
+                  isOpen ? "text-primary-foreground/90" : "text-gold"
+                }`}
+              >
                 {points} pts
               </p>
             </div>
@@ -87,4 +100,4 @@ export function SnippetWave({ unlocked, progress, playing }: Props) {
       </div>
     </div>
   );
-}
+});

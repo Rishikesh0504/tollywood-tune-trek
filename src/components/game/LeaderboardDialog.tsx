@@ -34,7 +34,6 @@ interface Props {
 
 export function LeaderboardDialog({
   stats,
-  lastPointsEarned,
   lastSongTitle,
   lastAttemptDuration,
   lastEra,
@@ -64,27 +63,12 @@ export function LeaderboardDialog({
     setLoading(false);
   }, []);
 
-  // Fetch when timeframe changes or whenever the modal opens
+  // Fetch only when timeframe changes or whenever the modal opens
   useEffect(() => {
     if (open) {
       loadData(timeframe);
     }
   }, [timeframe, open, loadData]);
-
-  // Sync current user's score to Supabase if nickname exists
-  useEffect(() => {
-    if (savedName && stats.totalScore > 0) {
-      syncScoreToSupabase({
-        name: savedName,
-        points: stats.totalScore,
-        attemptLength: lastAttemptDuration ?? 0.1,
-        era: lastEra ?? "All Eras",
-        songTitle: lastSongTitle ?? `${stats.wins} Solved`,
-      }).then(() => {
-        if (open) loadData(timeframe);
-      });
-    }
-  }, [savedName, stats.totalScore, open, timeframe, loadData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

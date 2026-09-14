@@ -22,9 +22,10 @@ import {
   MAX_ATTEMPTS,
   POINTS_BY_STEP,
   REVEAL_STEPS,
+  fetchAllSongs,
+  filterSongsByCategory,
   type CategoryId,
   type Song,
-  songsForCategory,
   todayKey,
 } from "@/data/songs";
 import { fetchTeluguTrack, type SongTrackResult } from "@/lib/audio";
@@ -56,6 +57,8 @@ function unlockedFor(attemptCount: number) {
 }
 
 export function GuessGame() {
+  const [allSongs, setAllSongs] = useState<Song[]>([]);
+  const [loadingCatalog, setLoadingCatalog] = useState(true);
   const [category, setCategory] = useState<CategoryId>("twenty-twenties");
   const [songIndex, setSongIndex] = useState(0);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
@@ -69,6 +72,8 @@ export function GuessGame() {
   const [stats, setStats] = useState<GameStats>(emptyStats);
   const [shake, setShake] = useState(0);
   const [pointsEarned, setPointsEarned] = useState(0);
+  const [lastSolvedTitle, setLastSolvedTitle] = useState<string>("");
+  const [lastAttemptDuration, setLastAttemptDuration] = useState<number>(0.1);
 
   // Live stream & artwork metadata
   const [liveAudioUrl, setLiveAudioUrl] = useState<string>("");
@@ -77,13 +82,30 @@ export function GuessGame() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  const retryCountRef = useRef(0);
 
   // Synchronous refs to prevent React state closure lag inside RAF
   const statusRef = useRef<Status>("playing");
   const unlockedRef = useRef<number>(FULL);
 
-  // Filter pool by chosen category
-  const pool = useMemo(() => songsForCategory(category), [category]);
+  // Load song catalog on initial mount
+  useEffect(() => {
+    let active = true;
+    fetchAllSongs().then((data) => {
+      if (!active) return;
+      setAllSongs(data);
+      setLoadingCatalog(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Filter pool by chosen category dynamically
+  const pool = useMemo(
+    () => filterSongsByCategory(allSongs, category),
+    [allSongs, category],
+  );
 
   const unlocked = status === "playing" ? unlockedFor(attempts.length) : FULL;
 
@@ -97,6 +119,19 @@ export function GuessGame() {
 
   useEffect(() => {
     setStats(loadStats());
+  }, []);
+
+  // Force-inject music favicon directly into document head
+  useEffect(() => {
+    let link: HTMLLinkElement | null =
+      document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.type = "image/x-icon";
+    link.href = "/favicon.ico?v=1";
   }, []);
 
   const stopAudio = useCallback(() => {
@@ -113,6 +148,7 @@ export function GuessGame() {
 
   // Guaranteed random track picker
   const shuffleTrack = useCallback(() => {
+    retryCountRef.current = 0;
     stopAudio();
     setAttempts([]);
     statusRef.current = "playing";
@@ -132,7 +168,7 @@ export function GuessGame() {
     });
   }, [pool.length, stopAudio]);
 
-  // Randomize track on category change
+  // Randomize track on category change or once catalog loads
   useEffect(() => {
     if (!pool.length) return;
     setSongIndex(Math.floor(Math.random() * pool.length));
@@ -159,7 +195,6 @@ export function GuessGame() {
     }
   }, [volume, muted]);
 
-  // Fetch verified preview & artwork directly from iTunes CDN
   useEffect(() => {
     if (!song) return;
 
@@ -175,21 +210,28 @@ export function GuessGame() {
       if (result?.audioUrl) {
         setLiveAudioUrl(result.audioUrl);
         setTrackMeta(result);
+        retryCountRef.current = 0;
       } else {
-        console.warn("⚠️ Preview audio unavailable for current track");
+        console.warn(
+          `⚠️ Preview audio unavailable for ${song.title} (${song.movie}). Finding another track...`,
+        );
+
+        if (retryCountRef.current < 5) {
+          retryCountRef.current += 1;
+          shuffleTrack();
+        }
       }
     });
 
     return () => {
       active = false;
     };
-  }, [song?.id, song?.title, song?.movie]);
+  }, [song?.id, song?.title, song?.movie, shuffleTrack]);
 
   const tick = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || audio.paused) return;
 
-    // Track elapsed time relative to the 2s offset so the waveform starts at 0s
     const elapsed = Math.max(0, audio.currentTime - AUDIO_START_OFFSET);
     setProgress(elapsed);
 
@@ -205,10 +247,10 @@ export function GuessGame() {
       rafRef.current = null;
       return;
     }
+
     rafRef.current = requestAnimationFrame(tick);
   }, []);
 
-  // Force audio to stop if it ever exceeds the allowed snippet duration
   const enforceAudioBounds = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -216,7 +258,6 @@ export function GuessGame() {
     if (statusRef.current === "playing") {
       const maxAllowed = AUDIO_START_OFFSET + unlockedRef.current;
 
-      // If playing past the allowed window or dragged before start offset:
       if (
         audio.currentTime >= maxAllowed ||
         audio.currentTime < AUDIO_START_OFFSET - 0.1
@@ -247,7 +288,16 @@ export function GuessGame() {
       .catch(() => setPlaying(false));
   }, [playing, stopAudio, tick, muted, volume, liveAudioUrl]);
 
-  // Lock mobile Control Center / notification shade and prevent scrub exploits
+  const handlePlayClick = useCallback(() => {
+    if (loadingAudio) return;
+    if (!liveAudioUrl) {
+      retryCountRef.current = 0;
+      shuffleTrack();
+      return;
+    }
+    togglePlay();
+  }, [loadingAudio, liveAudioUrl, shuffleTrack, togglePlay]);
+
   useEffect(() => {
     if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
 
@@ -261,7 +311,6 @@ export function GuessGame() {
       navigator.mediaSession.setActionHandler("play", () => togglePlay());
       navigator.mediaSession.setActionHandler("pause", () => stopAudio());
 
-      // Disable lock screen seekbars
       navigator.mediaSession.setActionHandler("seekto", null);
       navigator.mediaSession.setActionHandler("seekforward", null);
       navigator.mediaSession.setActionHandler("seekbackward", null);
@@ -300,6 +349,13 @@ export function GuessGame() {
         : 0;
       setPointsEarned(earned);
 
+      const attemptDuration = REVEAL_STEPS[attemptIndex] ?? 0.1;
+
+      if (won && song) {
+        setLastSolvedTitle(song.title);
+        setLastAttemptDuration(attemptDuration);
+      }
+
       setStats((prev) => {
         const next = recordResult(prev, {
           won,
@@ -309,14 +365,13 @@ export function GuessGame() {
         });
         saveStats(next);
 
-        // Live background update using cumulative total points
         if (won && typeof window !== "undefined") {
           const savedName = localStorage.getItem(PLAYER_NAME_KEY);
           if (savedName && song) {
             void syncScoreToSupabase({
               name: savedName,
               points: next.totalScore,
-              attemptLength: REVEAL_STEPS[attemptIndex] ?? 0.1,
+              attemptLength: attemptDuration,
               era:
                 CATEGORIES.find((c) => c.id === category)?.label ?? "All Eras",
               songTitle: song.title,
@@ -327,7 +382,6 @@ export function GuessGame() {
         return next;
       });
 
-      // Autoplay full song on completion (both Won and Lost/Skipped)
       const audio = audioRef.current;
       if (audio) {
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -381,6 +435,18 @@ export function GuessGame() {
     if (next.length >= MAX_ATTEMPTS) finish(false, MAX_ATTEMPTS);
   }, [attempts, status, stopAudio, finish]);
 
+  // Loading skeleton while initial catalog is fetched
+  if (loadingCatalog) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
+        <div className="size-9 animate-spin rounded-full border-2 border-hot border-t-transparent" />
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          Loading Tollywood Catalog...
+        </p>
+      </div>
+    );
+  }
+
   if (!song) return null;
 
   return (
@@ -393,14 +459,7 @@ export function GuessGame() {
           src={liveAudioUrl}
           preload="auto"
           onEnded={stopAudio}
-          onTimeUpdate={() => {
-            enforceAudioBounds();
-            if (audioRef.current && statusRef.current === "playing") {
-              setProgress(
-                Math.max(0, audioRef.current.currentTime - AUDIO_START_OFFSET),
-              );
-            }
-          }}
+          onTimeUpdate={enforceAudioBounds}
           onSeeking={enforceAudioBounds}
           onPlay={enforceAudioBounds}
         />
@@ -442,10 +501,8 @@ export function GuessGame() {
           <LeaderboardDialog
             stats={stats}
             lastPointsEarned={pointsEarned}
-            lastSongTitle={song.title}
-            lastAttemptDuration={
-              REVEAL_STEPS[Math.max(0, attempts.length - 1)] ?? 0.1
-            }
+            lastSongTitle={lastSolvedTitle || `${stats.wins} Solved`}
+            lastAttemptDuration={lastAttemptDuration}
             lastEra={CATEGORIES.find((c) => c.id === category)?.label}
           />
 
@@ -512,20 +569,36 @@ export function GuessGame() {
             />
 
             <div className="flex flex-col items-center gap-3">
-              {/* Play Button */}
+              {/* Play / Next Fallback Button */}
               <motion.button
-                onClick={togglePlay}
-                disabled={!liveAudioUrl || loadingAudio}
+                type="button"
+                onClick={handlePlayClick}
+                disabled={loadingAudio}
                 whileTap={{ scale: 0.93 }}
                 className={`grid size-20 place-items-center rounded-full bg-hot text-primary-foreground shadow-glow sm:size-24 disabled:cursor-not-allowed disabled:opacity-40 ${
                   playing ? "" : "pulse-ring"
                 }`}
-                aria-label={playing ? "Pause snippet" : "Play snippet"}
+                aria-label={
+                  loadingAudio
+                    ? "Loading audio"
+                    : !liveAudioUrl
+                      ? "Track unavailable, load next track"
+                      : playing
+                        ? "Pause snippet"
+                        : "Play snippet"
+                }
               >
                 {loadingAudio ? (
                   <span className="animate-pulse text-[10px] font-black uppercase tracking-wider">
                     Loading
                   </span>
+                ) : !liveAudioUrl ? (
+                  <div className="flex flex-col items-center">
+                    <RotateCcw className="size-7" />
+                    <span className="text-[9px] font-bold uppercase tracking-tight mt-0.5">
+                      Next
+                    </span>
+                  </div>
                 ) : playing ? (
                   <Pause className="size-9" />
                 ) : (
@@ -534,9 +607,11 @@ export function GuessGame() {
               </motion.button>
 
               <p className="text-xs text-muted-foreground">
-                {status === "playing"
-                  ? `Attempt ${Math.min(attempts.length + 1, MAX_ATTEMPTS)} of ${MAX_ATTEMPTS} • ${POINTS_BY_STEP[unlocked]} points available`
-                  : "Round Over"}
+                {!liveAudioUrl && !loadingAudio
+                  ? "Audio unavailable • Click to pick another song"
+                  : status === "playing"
+                    ? `Attempt ${Math.min(attempts.length + 1, MAX_ATTEMPTS)} of ${MAX_ATTEMPTS} • ${POINTS_BY_STEP[unlocked]} points available`
+                    : "Round Over"}
               </p>
 
               {/* Volume Controls */}
