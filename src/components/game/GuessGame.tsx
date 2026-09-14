@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/react";
+import { UsernamePromptDialog } from "@/components/game/UsernamePromptDialog";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -451,6 +452,8 @@ export function GuessGame() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-5 sm:pt-8">
+      {/* Auto-prompts on first visit if no name exists */}
+      <UsernamePromptDialog />
       {/* CDN Audio Stream */}
       {liveAudioUrl && (
         <audio

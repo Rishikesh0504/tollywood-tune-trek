@@ -1124,15 +1124,7 @@
     "singers": "Sid Sriram",
     "category": "twenty-twenties"
   },
-  {
-    "id": "t126",
-    "title": "Eeswarude",
-    "movie": "Bimbisara",
-    "year": 2022,
-    "composer": "Chirrantan Bhatt",
-    "singers": "Kaala Bhairava",
-    "category": "twenty-twenties"
-  },
+  
   {
     "id": "t127",
     "title": "Krishna Trance",
@@ -2034,15 +2026,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t227",
-    "title": "Annayya Annayya",
-    "movie": "Custody",
-    "year": 2023,
-    "composer": "Ilaiyaraaja",
-    "singers": "Karthik",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t228",
     "title": "My Dear Markandeya",
     "movie": "Bro",
@@ -2319,15 +2302,6 @@
     "year": 2024,
     "composer": "G.V. Prakash Kumar",
     "singers": "Shweta Mohan",
-    "category": "twenty-twenties"
-  },
-  {
-    "id": "t260",
-    "title": "Ka Mass Anthem",
-    "movie": "KA",
-    "year": 2024,
-    "composer": "Sam CS",
-    "singers": "Kapil Kapilan",
     "category": "twenty-twenties"
   },
   {
@@ -3372,15 +3346,6 @@
     "year": 2001,
     "composer": "Mani Sharma",
     "singers": "KK",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m27",
-    "title": "Premante Suluvu Kaadhu",
-    "movie": "Kushi",
-    "year": 2001,
-    "composer": "Mani Sharma",
-    "singers": "Mano, Swarnalatha",
     "category": "two-thousands-tens"
   },
   {
@@ -4869,15 +4834,6 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m194",
-    "title": "A Vachhi B Pai Vaale",
-    "movie": "Chatrapathi",
-    "year": 2005,
-    "composer": "M.M. Keeravani",
-    "singers": "KK, Shreya Ghoshal",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m195",
     "title": "Agni Skalana",
     "movie": "Chatrapathi",
@@ -5451,15 +5407,6 @@
     "year": 2008,
     "composer": "Devi Sri Prasad",
     "singers": "Franco, Bhargavi Pillai",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m259",
-    "title": "Get Ready",
-    "movie": "Ready",
-    "year": 2008,
-    "composer": "Devi Sri Prasad",
-    "singers": "Jaspreet Jasz",
     "category": "two-thousands-tens"
   },
   {
@@ -6309,15 +6256,6 @@
     "category": "nineties-two-thousands"
   },
   {
-    "id": "n4",
-    "title": "Abbanee Teeyani Dhebba",
-    "movie": "Jagadeka Veerudu Athiloka Sundari",
-    "year": 1990,
-    "composer": "Ilaiyaraaja",
-    "singers": "S.P. Balasubrahmanyam, K.S. Chithra",
-    "category": "nineties-two-thousands"
-  },
-  {
     "id": "n5",
     "title": "Priyathama Nanuvachina",
     "movie": "Jagadeka Veerudu Athiloka Sundari",
@@ -6669,15 +6607,6 @@
     "category": "nineties-two-thousands"
   },
   {
-    "id": "n44",
-    "title": "Mattekki Thooguthundi",
-    "movie": "Bavagaru Bagunnara",
-    "year": 1998,
-    "composer": "Mani Sharma",
-    "singers": "S.P. Balasubrahmanyam, Chithra",
-    "category": "nineties-two-thousands"
-  },
-  {
     "id": "n45",
     "title": "Ammadu Appudo",
     "movie": "Samarasimha Reddy",
@@ -6693,15 +6622,6 @@
     "year": 1999,
     "composer": "Mani Sharma",
     "singers": "S.P. Balasubrahmanyam, Sujatha",
-    "category": "nineties-two-thousands"
-  },
-  {
-    "id": "n47",
-    "title": "Chaliga Vundannadha",
-    "movie": "Samarasimha Reddy",
-    "year": 1999,
-    "composer": "Mani Sharma",
-    "singers": "S.P. Balasubrahmanyam",
     "category": "nineties-two-thousands"
   },
   {
@@ -7355,15 +7275,6 @@
   {
     "id": "n120",
     "title": "Priya Raagale",
-    "movie": "Hello Brother",
-    "year": 1994,
-    "composer": "Raj-Koti",
-    "singers": "S.P. Balasubrahmanyam, K.S. Chithra",
-    "category": "nineties-two-thousands"
-  },
-  {
-    "id": "n121",
-    "title": "Ekkada Ekkada",
     "movie": "Hello Brother",
     "year": 1994,
     "composer": "Raj-Koti",
