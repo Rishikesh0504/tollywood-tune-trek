@@ -432,15 +432,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t49",
-    "title": "Neekemo Mandochhe",
-    "movie": "Waltair Veerayya",
-    "year": 2023,
-    "composer": "Devi Sri Prasad",
-    "singers": "Rahul Sipligunj",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t50",
     "title": "Sridevi Chiranjeevi",
     "movie": "Waltair Veerayya",
@@ -973,7 +964,7 @@
   },
   {
     "id": "t109",
-    "title": "Na Rojaa Nuvve",
+    "title": "Na Roja Nuvve (From Kushi)",
     "movie": "Kushi",
     "year": 2023,
     "composer": "Hesham Abdul Wahab",
@@ -1124,7 +1115,15 @@
     "singers": "Sid Sriram",
     "category": "twenty-twenties"
   },
-  
+  {
+    "id": "t126",
+    "title": "Eeswarude",
+    "movie": "Bimbisara",
+    "year": 2022,
+    "composer": "Chirrantan Bhatt",
+    "singers": "Kaala Bhairava",
+    "category": "twenty-twenties"
+  },
   {
     "id": "t127",
     "title": "Krishna Trance",
@@ -1603,15 +1602,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t180",
-    "title": "Naa Kosam",
-    "movie": "Bangarraju",
-    "year": 2022,
-    "composer": "Anup Rubens",
-    "singers": "Sid Sriram",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t181",
     "title": "Khiladi Title Song",
     "movie": "Khiladi",
@@ -1729,15 +1719,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t194",
-    "title": "Woo Aa Aha Aha",
-    "movie": "F3 Fun and Frustration",
-    "year": 2022,
-    "composer": "Devi Sri Prasad",
-    "singers": "Sunidhi Chauhan, Lavita Lobo",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t195",
     "title": "Life Ante Itta Vundaala",
     "movie": "F3 Fun and Frustration",
@@ -1834,15 +1815,6 @@
     "year": 2022,
     "composer": "Kaala Bhairava",
     "singers": "Kaala Bhairava",
-    "category": "twenty-twenties"
-  },
-  {
-    "id": "t206",
-    "title": "O Sitha Rama",
-    "movie": "Bimbisara",
-    "year": 2022,
-    "composer": "Chirrantan Bhatt",
-    "singers": "Sri Krishna, Mohana Bhogaraju",
     "category": "twenty-twenties"
   },
   {
@@ -2026,6 +1998,15 @@
     "category": "twenty-twenties"
   },
   {
+    "id": "t227",
+    "title": "Annayya Annayya",
+    "movie": "Custody",
+    "year": 2023,
+    "composer": "Ilaiyaraaja",
+    "singers": "Karthik",
+    "category": "twenty-twenties"
+  },
+  {
     "id": "t228",
     "title": "My Dear Markandeya",
     "movie": "Bro",
@@ -2077,15 +2058,6 @@
     "year": 2023,
     "composer": "Radhan",
     "singers": "Radhan",
-    "category": "twenty-twenties"
-  },
-  {
-    "id": "t234",
-    "title": "Main Aata Dookudaa",
-    "movie": "Skanda",
-    "year": 2023,
-    "composer": "Thaman S",
-    "singers": "Bhavana Isvi",
     "category": "twenty-twenties"
   },
   {
@@ -2302,6 +2274,24 @@
     "year": 2024,
     "composer": "G.V. Prakash Kumar",
     "singers": "Shweta Mohan",
+    "category": "twenty-twenties"
+  },
+  {
+    "id": "t259",
+    "title": "World of KA",
+    "movie": "KA",
+    "year": 2024,
+    "composer": "Sam CS",
+    "singers": "Sam CS",
+    "category": "twenty-twenties"
+  },
+  {
+    "id": "t260",
+    "title": "Ka Mass Anthem",
+    "movie": "KA",
+    "year": 2024,
+    "composer": "Sam CS",
+    "singers": "Kapil Kapilan",
     "category": "twenty-twenties"
   },
   {
@@ -2863,15 +2853,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t323",
-    "title": "Soul of Baby",
-    "movie": "Baby",
-    "year": 2023,
-    "composer": "Vijai Bulganin",
-    "singers": "Vijai Bulganin",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t324",
     "title": "Raghava Dance",
     "movie": "Game Changer",
@@ -3175,15 +3156,6 @@
     "year": 2018,
     "composer": "Devi Sri Prasad",
     "singers": "Shiva Nagulu",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m8",
-    "title": "Ranga Ranga Rangasthalana",
-    "movie": "Rangasthalam",
-    "year": 2018,
-    "composer": "Devi Sri Prasad",
-    "singers": "Rahul Sipligunj",
     "category": "two-thousands-tens"
   },
   {
@@ -3547,15 +3519,6 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m50",
-    "title": "Something Something",
-    "movie": "Nuvvostanante Nenoddantana",
-    "year": 2005,
-    "composer": "Devi Sri Prasad",
-    "singers": "Tippu",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m51",
     "title": "Paripoke Pitta",
     "movie": "Nuvvostanante Nenoddantana",
@@ -3747,9 +3710,9 @@
   {
     "id": "m72",
     "title": "Inka Cheppale",
-    "movie": "Darling",
-    "year": 2010,
-    "composer": "G.V. Prakash Kumar",
+    "movie": "Seethamma Vakitlo Sirimalle Chettu",
+    "year": 2013,
+    "composer": "Mickey J Meyer",
     "singers": "Rahul Nambiar, Shweta Mohan",
     "category": "two-thousands-tens"
   },
@@ -4312,30 +4275,12 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m136",
-    "title": "Gundello Emundo",
-    "movie": "Manasantha Nuvve",
-    "year": 2001,
-    "composer": "R.P. Patnaik",
-    "singers": "R.P. Patnaik, Usha",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m137",
     "title": "Cheppave Prema",
     "movie": "Manasantha Nuvve",
     "year": 2001,
     "composer": "R.P. Patnaik",
     "singers": "Udit Narayan, Sujatha",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m138",
-    "title": "Nuvve Kavali",
-    "movie": "Nuvve Kavali",
-    "year": 2000,
-    "composer": "Koti",
-    "singers": "K.S. Chithra",
     "category": "two-thousands-tens"
   },
   {
@@ -4609,15 +4554,6 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m169",
-    "title": "Seeti Maar",
-    "movie": "DJ Duvvada Jagannadham",
-    "year": 2017,
-    "composer": "Devi Sri Prasad",
-    "singers": "Jaspreet Jasz, Rita",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m170",
     "title": "Gudilo Badilo",
     "movie": "DJ Duvvada Jagannadham",
@@ -4831,6 +4767,15 @@
     "year": 2017,
     "composer": "Devi Sri Prasad",
     "singers": "Inno Genga",
+    "category": "two-thousands-tens"
+  },
+  {
+    "id": "m194",
+    "title": "A Vachhi B Pai Vaale",
+    "movie": "Chatrapathi",
+    "year": 2005,
+    "composer": "M.M. Keeravani",
+    "singers": "KK, Shreya Ghoshal",
     "category": "two-thousands-tens"
   },
   {
@@ -5393,7 +5338,7 @@
   },
   {
     "id": "m257",
-    "title": "Om Namaste Bolo",
+    "title": "Om Namasthey",
     "movie": "Ready",
     "year": 2008,
     "composer": "Devi Sri Prasad",
@@ -5407,6 +5352,15 @@
     "year": 2008,
     "composer": "Devi Sri Prasad",
     "singers": "Franco, Bhargavi Pillai",
+    "category": "two-thousands-tens"
+  },
+  {
+    "id": "m259",
+    "title": "Get Ready",
+    "movie": "Ready",
+    "year": 2008,
+    "composer": "Devi Sri Prasad",
+    "singers": "Jaspreet Jasz",
     "category": "two-thousands-tens"
   },
   {
@@ -5869,15 +5823,6 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m311",
-    "title": "Entho Fun",
-    "movie": "F2 Fun and Frustration",
-    "year": 2019,
-    "composer": "Devi Sri Prasad",
-    "singers": "Devi Sri Prasad",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m312",
     "title": "Girra Girra",
     "movie": "F2 Fun and Frustration",
@@ -6256,6 +6201,15 @@
     "category": "nineties-two-thousands"
   },
   {
+    "id": "n4",
+    "title": "Abbanee Teeyani Dhebba",
+    "movie": "Jagadeka Veerudu Athiloka Sundari",
+    "year": 1990,
+    "composer": "Ilaiyaraaja",
+    "singers": "S.P. Balasubrahmanyam, K.S. Chithra",
+    "category": "nineties-two-thousands"
+  },
+  {
     "id": "n5",
     "title": "Priyathama Nanuvachina",
     "movie": "Jagadeka Veerudu Athiloka Sundari",
@@ -6607,6 +6561,15 @@
     "category": "nineties-two-thousands"
   },
   {
+    "id": "n44",
+    "title": "Mattekki Thooguthundi",
+    "movie": "Bavagaru Bagunnara",
+    "year": 1998,
+    "composer": "Mani Sharma",
+    "singers": "S.P. Balasubrahmanyam, Chithra",
+    "category": "nineties-two-thousands"
+  },
+  {
     "id": "n45",
     "title": "Ammadu Appudo",
     "movie": "Samarasimha Reddy",
@@ -6622,6 +6585,15 @@
     "year": 1999,
     "composer": "Mani Sharma",
     "singers": "S.P. Balasubrahmanyam, Sujatha",
+    "category": "nineties-two-thousands"
+  },
+  {
+    "id": "n47",
+    "title": "Chaliga Vundannadha",
+    "movie": "Samarasimha Reddy",
+    "year": 1999,
+    "composer": "Mani Sharma",
+    "singers": "S.P. Balasubrahmanyam",
     "category": "nineties-two-thousands"
   },
   {
@@ -7275,6 +7247,15 @@
   {
     "id": "n120",
     "title": "Priya Raagale",
+    "movie": "Hello Brother",
+    "year": 1994,
+    "composer": "Raj-Koti",
+    "singers": "S.P. Balasubrahmanyam, K.S. Chithra",
+    "category": "nineties-two-thousands"
+  },
+  {
+    "id": "n121",
+    "title": "Ekkada Ekkada",
     "movie": "Hello Brother",
     "year": 1994,
     "composer": "Raj-Koti",

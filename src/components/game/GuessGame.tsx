@@ -16,6 +16,7 @@ import {
   Volume1,
   Volume2,
   VolumeX,
+  Heart,
   X,
 } from "lucide-react";
 import {
@@ -867,7 +868,20 @@ export function GuessGame() {
           </AnimatePresence>
         </div>
       </div>
-
+      {/* Footer / Credits */}
+      {/* Footer / Credits */}
+      <footer className="mt-16 border-t border-border/40 pt-8 pb-6 text-center text-xs text-muted-foreground">
+        <p className="flex items-center justify-center gap-1.5 font-medium">
+          Made with <span className="inline-block animate-pulse">❤️</span> for
+          Telugu Cinema Lovers
+        </p>
+        <p className="mt-1.5">
+          Designed & Built by{" "}
+          <span className="font-semibold text-foreground">
+            Rishikesh Vallala
+          </span>
+        </p>
+      </footer>
       {/* Vercel Analytics */}
       <Analytics />
     </div>

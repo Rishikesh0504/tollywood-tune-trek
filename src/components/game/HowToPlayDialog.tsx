@@ -1,4 +1,11 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { REVEAL_STEPS } from "@/data/songs";
 import { HelpCircle } from "lucide-react";
 
@@ -20,20 +27,23 @@ export function HowToPlayDialog() {
         </DialogHeader>
         <ol className="space-y-3 text-sm text-muted-foreground">
           <li>
-            <span className="font-semibold text-foreground">1.</span> Hit play — you start with just{" "}
-            <span className="text-gold">0.5 seconds</span> of the intro.
+            <span className="font-semibold text-foreground">1.</span> Hit play —
+            you start with just <span className="text-gold">0.1 seconds</span>{" "}
+            of the intro.
           </li>
           <li>
-            <span className="font-semibold text-foreground">2.</span> Search by song title or movie name and submit your
-            guess.
+            <span className="font-semibold text-foreground">2.</span> Search by
+            song title or movie name and submit your guess.
           </li>
           <li>
-            <span className="font-semibold text-foreground">3.</span> A wrong guess or a skip unlocks more audio:{" "}
+            <span className="font-semibold text-foreground">3.</span> A wrong
+            guess or a skip unlocks more audio:{" "}
             {REVEAL_STEPS.map((s) => `${s}s`).join(" → ")}.
           </li>
           <li>
-            <span className="font-semibold text-foreground">4.</span> Six attempts per round. Win to grow your daily
-            streak and share your emoji grid.
+            <span className="font-semibold text-foreground">4.</span> Six
+            attempts per round. Win to grow your daily streak and share your
+            emoji grid.
           </li>
         </ol>
       </DialogContent>
