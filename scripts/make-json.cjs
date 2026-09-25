@@ -1,9 +1,7 @@
-import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+const { writeFileSync } = require("fs");
+const { resolve } = require("path");
 
-type SongTuple = [string, string, string, number, string, string, string];
-
-const RAW_SONGS: SongTuple[] = [
+const RAW_SONGS = [
   // 2020s Bangers
   [
     "t1",
@@ -1745,15 +1743,7 @@ const RAW_SONGS: SongTuple[] = [
     "Tojan Toby",
     "twenty-twenties",
   ],
-  [
-    "t197",
-    "Panchakarla",
-    "Ante Sundaraniki",
-    2022,
-    "Vivek Sagar",
-    "Vivek Sagar",
-    "twenty-twenties",
-  ],
+  
   [
     "t198",
     "Entha Chithram",
@@ -2358,15 +2348,7 @@ const RAW_SONGS: SongTuple[] = [
     "G.V. Prakash Kumar",
     "twenty-twenties",
   ],
-  [
-    "t268",
-    "Maniki Maniki",
-    "Thangalaan",
-    2024,
-    "G.V. Prakash Kumar",
-    "Silambarasan TR",
-    "twenty-twenties",
-  ],
+  
   [
     "t269",
     "Aa Rojulu Malli Raavu",
@@ -2482,15 +2464,6 @@ const RAW_SONGS: SongTuple[] = [
     2024,
     "Jakes Bejoy",
     "Ram Miriyala",
-    "twenty-twenties",
-  ],
-  [
-    "t282",
-    "Oh Bapu Garu",
-    "Zebra",
-    2024,
-    "Ravi Basrur",
-    "Santhosh Venky",
     "twenty-twenties",
   ],
   [
@@ -2710,15 +2683,6 @@ const RAW_SONGS: SongTuple[] = [
     "twenty-twenties",
   ],
   [
-    "t307",
-    "Kurchi Trance",
-    "Guntur Kaaram",
-    2024,
-    "Thaman S",
-    "Sri Krishna",
-    "twenty-twenties",
-  ],
-  [
     "t308",
     "Guntur Mirchi Anthem",
     "Guntur Kaaram",
@@ -2837,7 +2801,7 @@ const RAW_SONGS: SongTuple[] = [
   ],
   [
     "t321",
-    "Bheems Mass Beat",
+    "Ooru Palletooru",
     "Balagam",
     2023,
     "Bheems Ceciroleo",
@@ -3645,15 +3609,6 @@ const RAW_SONGS: SongTuple[] = [
     2014,
     "Mickey J Meyer",
     "K.S. Chithra",
-    "two-thousands-tens",
-  ],
-  [
-    "m65",
-    "Oorantha",
-    "Mukunda",
-    2014,
-    "Mickey J Meyer",
-    "Haricharan",
     "two-thousands-tens",
   ],
   [
@@ -5325,15 +5280,6 @@ const RAW_SONGS: SongTuple[] = [
     "two-thousands-tens",
   ],
   [
-    "m255",
-    "Hello Boys",
-    "Tulasi",
-    2007,
-    "Devi Sri Prasad",
-    "Devi Sri Prasad",
-    "two-thousands-tens",
-  ],
-  [
     "m256",
     "Vennelintha",
     "Tulasi",
@@ -6141,15 +6087,6 @@ const RAW_SONGS: SongTuple[] = [
     2013,
     "Devi Sri Prasad",
     "David Simon, Anitha",
-    "two-thousands-tens",
-  ],
-  [
-    "m347",
-    "Boochade Boochade",
-    "Race Gurram",
-    2014,
-    "Thaman S",
-    "Shreya Ghoshal, Rahul Nambiar",
     "two-thousands-tens",
   ],
   [

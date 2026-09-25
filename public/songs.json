@@ -1737,15 +1737,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t197",
-    "title": "Panchakarla",
-    "movie": "Ante Sundaraniki",
-    "year": 2022,
-    "composer": "Vivek Sagar",
-    "singers": "Vivek Sagar",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t198",
     "title": "Entha Chithram",
     "movie": "Ante Sundaraniki",
@@ -2357,15 +2348,7 @@
     "singers": "G.V. Prakash Kumar",
     "category": "twenty-twenties"
   },
-  {
-    "id": "t268",
-    "title": "Maniki Maniki",
-    "movie": "Thangalaan",
-    "year": 2024,
-    "composer": "G.V. Prakash Kumar",
-    "singers": "Silambarasan TR",
-    "category": "twenty-twenties"
-  },
+  
   {
     "id": "t269",
     "title": "Aa Rojulu Malli Raavu",
@@ -2483,15 +2466,7 @@
     "singers": "Ram Miriyala",
     "category": "twenty-twenties"
   },
-  {
-    "id": "t282",
-    "title": "Oh Bapu Garu",
-    "movie": "Zebra",
-    "year": 2024,
-    "composer": "Ravi Basrur",
-    "singers": "Santhosh Venky",
-    "category": "twenty-twenties"
-  },
+
   {
     "id": "t283",
     "title": "Tere Bina Zebra",
@@ -2709,15 +2684,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t307",
-    "title": "Kurchi Trance",
-    "movie": "Guntur Kaaram",
-    "year": 2024,
-    "composer": "Thaman S",
-    "singers": "Sri Krishna",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t308",
     "title": "Guntur Mirchi Anthem",
     "movie": "Guntur Kaaram",
@@ -2836,7 +2802,7 @@
   },
   {
     "id": "t321",
-    "title": "Bheems Mass Beat",
+    "title": "Ooru Palletooru",
     "movie": "Balagam",
     "year": 2023,
     "composer": "Bheems Ceciroleo",
@@ -3644,15 +3610,7 @@
     "singers": "K.S. Chithra",
     "category": "two-thousands-tens"
   },
-  {
-    "id": "m65",
-    "title": "Oorantha",
-    "movie": "Mukunda",
-    "year": 2014,
-    "composer": "Mickey J Meyer",
-    "singers": "Haricharan",
-    "category": "two-thousands-tens"
-  },
+  
   {
     "id": "m66",
     "title": "Chinnadana Neekosam",
@@ -5318,24 +5276,7 @@
     "singers": "Naveen, Mamata Mohandas",
     "category": "two-thousands-tens"
   },
-  {
-    "id": "m255",
-    "title": "Hello Boys",
-    "movie": "Tulasi",
-    "year": 2007,
-    "composer": "Devi Sri Prasad",
-    "singers": "Devi Sri Prasad",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m256",
-    "title": "Vennelintha",
-    "movie": "Tulasi",
-    "year": 2007,
-    "composer": "Devi Sri Prasad",
-    "singers": "Venu, Sunitha",
-    "category": "two-thousands-tens"
-  },
+  
   {
     "id": "m257",
     "title": "Om Namasthey",
@@ -6135,15 +6076,6 @@
     "year": 2013,
     "composer": "Devi Sri Prasad",
     "singers": "David Simon, Anitha",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m347",
-    "title": "Boochade Boochade",
-    "movie": "Race Gurram",
-    "year": 2014,
-    "composer": "Thaman S",
-    "singers": "Shreya Ghoshal, Rahul Nambiar",
     "category": "two-thousands-tens"
   },
   {

@@ -1,19 +1,7 @@
-import { exec } from "node:child_process";
-import * as readline from "node:readline";
+const { exec } = require("child_process");
+const readline = require("readline");
 
-interface iTunesItem {
-  trackName?: string;
-  collectionName?: string;
-  artistName?: string;
-  previewUrl?: string;
-}
-
-interface iTunesResponse {
-  resultCount: number;
-  results: iTunesItem[];
-}
-
-function sanitizeText(str: string): string {
+function sanitizeText(str) {
   return (str || "")
     .replace(/\(.*?\)/g, "")
     .replace(/\[.*?\]/g, "")
@@ -22,38 +10,23 @@ function sanitizeText(str: string): string {
     .trim();
 }
 
-function getTitleWords(str: string): string[] {
+function getTitleWords(str) {
   return sanitizeText(str)
     .toLowerCase()
     .split(/\s+/)
     .filter((w) => w.length > 2);
 }
 
-function isWrongLanguageDub(item: iTunesItem): boolean {
-  const metadata =
-    `${item.trackName ?? ""} ${item.collectionName ?? ""}`.toLowerCase();
-  const badLanguageTags = [
-    "hindi",
-    "tamil",
-    "kannada",
-    "malayalam",
-    "bhojpuri",
-    "punjabi",
-  ];
+function isWrongLanguageDub(item) {
+  const metadata = `${item.trackName ?? ""} ${item.collectionName ?? ""}`.toLowerCase();
+  const badLanguageTags = ["hindi", "tamil", "kannada", "malayalam", "bhojpuri", "punjabi"];
   return badLanguageTags.some((lang) => metadata.includes(lang));
 }
 
-function isThemeTrap(trackName: string, targetTitle: string): boolean {
+function isThemeTrap(trackName, targetTitle) {
   const lowerTrack = (trackName || "").toLowerCase();
   const lowerTarget = (targetTitle || "").toLowerCase();
-  const themeKeywords = [
-    "soul of",
-    "theme",
-    "bgm",
-    "instrumental",
-    "teaser",
-    "trailer",
-  ];
+  const themeKeywords = ["soul of", "theme", "bgm", "instrumental", "teaser", "trailer"];
 
   for (const keyword of themeKeywords) {
     if (lowerTrack.includes(keyword) && !lowerTarget.includes(keyword)) {
@@ -63,7 +36,7 @@ function isThemeTrap(trackName: string, targetTitle: string): boolean {
   return false;
 }
 
-async function queryiTunes(searchTerm: string): Promise<iTunesItem[]> {
+async function queryiTunes(searchTerm) {
   try {
     const params = new URLSearchParams({
       term: searchTerm,
@@ -73,45 +46,40 @@ async function queryiTunes(searchTerm: string): Promise<iTunesItem[]> {
       limit: "8",
     });
 
-    const res = await fetch(
-      `https://itunes.apple.com/search?${params.toString()}`,
-    );
+    const res = await fetch(`https://itunes.apple.com/search?${params.toString()}`);
     if (!res.ok) return [];
 
-    const data: iTunesResponse = await res.json();
+    const data = await res.json();
     return (data.results || []).filter((track) => Boolean(track.previewUrl));
   } catch {
     return [];
   }
 }
 
-function openInPlayer(url: string) {
+function openInPlayer(url) {
   const startCmd =
     process.platform === "win32"
       ? `start "" "${url}"`
       : process.platform === "darwin"
-        ? `open "${url}"`
-        : `xdg-open "${url}"`;
+      ? `open "${url}"`
+      : `xdg-open "${url}"`;
 
   exec(startCmd, (err) => {
-    if (err)
-      console.error("Could not automatically launch player:", err.message);
+    if (err) console.error("Could not automatically launch player:", err.message);
   });
 }
 
-async function verifyAndPlay(titleInput: string, movieInput: string = "") {
+async function verifyAndPlay(titleInput, movieInput = "") {
   const cleanT = sanitizeText(titleInput);
   const cleanM = sanitizeText(movieInput);
 
-  console.log(
-    `\n🔎 Searching iTunes for: "${cleanT}" ${cleanM ? `(${cleanM})` : ""}...`,
-  );
+  console.log(`\n🔎 Searching iTunes for: "${cleanT}" ${cleanM ? `(${cleanM})` : ""}...`);
 
   const queries = cleanM
     ? [`${cleanT} ${cleanM} Telugu`, `${cleanT} ${cleanM}`, `${cleanT}`]
     : [`${cleanT} Telugu`, `${cleanT}`];
 
-  let candidates: iTunesItem[] = [];
+  let candidates = [];
 
   for (const q of queries) {
     const results = await queryiTunes(q);
@@ -147,7 +115,7 @@ async function verifyAndPlay(titleInput: string, movieInput: string = "") {
   console.log(`\nFound ${candidates.length} candidate(s):`);
   scoredCandidates.forEach(({ item, score }, index) => {
     console.log(
-      `  [${index + 1}] Score: ${score.toString().padStart(3)} | "${item.trackName}" — ${item.artistName} (${item.collectionName})`,
+      `  [${index + 1}] Score: ${score.toString().padStart(3)} | "${item.trackName}" — ${item.artistName} (${item.collectionName})`
     );
   });
 
@@ -166,26 +134,21 @@ async function verifyAndPlay(titleInput: string, movieInput: string = "") {
   openInPlayer(best.previewUrl);
 }
 
-// Support CLI arguments: npx tsx scripts/test-song.ts "Title" "Movie"
 const args = process.argv.slice(2);
 
 if (args.length > 0) {
   const [cliTitle, cliMovie] = args;
   verifyAndPlay(cliTitle, cliMovie || "");
 } else {
-  // Interactive Prompt
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
   rl.question("Enter Song Title: ", (title) => {
-    rl.question(
-      "Enter Movie Name (optional, press Enter to skip): ",
-      (movie) => {
-        rl.close();
-        verifyAndPlay(title, movie);
-      },
-    );
+    rl.question("Enter Movie Name (optional, press Enter to skip): ", (movie) => {
+      rl.close();
+      verifyAndPlay(title, movie);
+    });
   });
 }

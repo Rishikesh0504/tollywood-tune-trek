@@ -507,7 +507,7 @@ export function GuessGame() {
             lastPointsEarned={pointsEarned}
             lastSongTitle={lastSolvedTitle || `${stats.wins} Solved`}
             lastAttemptDuration={lastAttemptDuration}
-            lastEra={CATEGORIES.find((c) => c.id === category)?.label}
+            lastEra={CATEGORIES.find((c) => c.id === category)?.label ?? "All Eras"}
           />
 
           {/* Theme Toggle */}
