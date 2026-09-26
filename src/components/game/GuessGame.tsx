@@ -16,7 +16,6 @@ import {
   Volume1,
   Volume2,
   VolumeX,
-  Heart,
   X,
 } from "lucide-react";
 import {
@@ -84,20 +83,26 @@ export function GuessGame() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const retryCountRef = useRef(0);
 
   // Synchronous refs to prevent React state closure lag inside RAF
   const statusRef = useRef<Status>("playing");
   const unlockedRef = useRef<number>(FULL);
 
-  // Load song catalog on initial mount
+  // Load song catalog on initial mount with error fallback
   useEffect(() => {
     let active = true;
-    fetchAllSongs().then((data) => {
-      if (!active) return;
-      setAllSongs(data);
-      setLoadingCatalog(false);
-    });
+    fetchAllSongs()
+      .then((data) => {
+        if (!active) return;
+        setAllSongs(data);
+        setLoadingCatalog(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load catalog:", err);
+        if (!active) return;
+        setLoadingCatalog(false);
+      });
+
     return () => {
       active = false;
     };
@@ -120,7 +125,11 @@ export function GuessGame() {
   }, [unlocked]);
 
   useEffect(() => {
-    setStats(loadStats());
+    try {
+      setStats(loadStats());
+    } catch {
+      // Handles iOS private browsing localStorage restrictions
+    }
   }, []);
 
   // Force-inject music favicon directly into document head
@@ -140,7 +149,9 @@ export function GuessGame() {
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
-      audio.currentTime = AUDIO_START_OFFSET;
+      if (audio.readyState >= 1) {
+        audio.currentTime = AUDIO_START_OFFSET;
+      }
     }
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
@@ -150,7 +161,6 @@ export function GuessGame() {
 
   // Guaranteed random track picker
   const shuffleTrack = useCallback(() => {
-    retryCountRef.current = 0;
     stopAudio();
     setAttempts([]);
     statusRef.current = "playing";
@@ -170,7 +180,7 @@ export function GuessGame() {
     });
   }, [pool.length, stopAudio]);
 
-  // Randomize track on category change or once catalog loads
+  // Randomize track on category change
   useEffect(() => {
     if (!pool.length) return;
     setSongIndex(Math.floor(Math.random() * pool.length));
@@ -190,13 +200,19 @@ export function GuessGame() {
     return pool[songIndex % pool.length];
   }, [pool, songIndex]);
 
-  // Live volume synchronization
+  // Live volume synchronization (safely guarded for iOS where audio.volume is read-only)
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = muted ? 0 : volume;
+      try {
+        audioRef.current.volume = muted ? 0 : volume;
+      } catch {
+        // iOS Safari read-only volume ignore
+      }
     }
   }, [volume, muted]);
 
+  // Audio fetching without infinite auto-shuffle loop
+  // Audio fetching without infinite retry loop
   useEffect(() => {
     if (!song) return;
 
@@ -205,31 +221,28 @@ export function GuessGame() {
     setTrackMeta(null);
     setLoadingAudio(true);
 
-    fetchTeluguTrack(song.title, song.movie).then((result) => {
-      if (!active) return;
-      setLoadingAudio(false);
-
-      if (result?.audioUrl) {
-        setLiveAudioUrl(result.audioUrl);
-        setTrackMeta(result);
-        retryCountRef.current = 0;
-      } else {
-        console.warn(
-          `⚠️ Preview audio unavailable for ${song.title} (${song.movie}). Finding another track...`,
-        );
-
-        if (retryCountRef.current < 5) {
-          retryCountRef.current += 1;
-          shuffleTrack();
+    fetchTeluguTrack(song.title, song.movie)
+      .then((result) => {
+        if (!active) return;
+        if (result?.audioUrl) {
+          setLiveAudioUrl(result.audioUrl);
+          setTrackMeta(result);
+        } else {
+          console.warn(`[Audio] No stream found for: ${song.title}`);
         }
-      }
-    });
+      })
+      .catch((err) => {
+        console.error("[Audio] Lookup error:", err);
+      })
+      .finally(() => {
+        if (active) setLoadingAudio(false);
+      });
 
     return () => {
       active = false;
     };
-  }, [song?.id, song?.title, song?.movie, shuffleTrack]);
-
+  }, [song?.id]);
+  
   const tick = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || audio.paused) return;
@@ -243,7 +256,9 @@ export function GuessGame() {
       audio.currentTime >= AUDIO_START_OFFSET + unlockedRef.current - 0.02
     ) {
       audio.pause();
-      audio.currentTime = AUDIO_START_OFFSET;
+      if (audio.readyState >= 1) {
+        audio.currentTime = AUDIO_START_OFFSET;
+      }
       setPlaying(false);
       setProgress(0);
       rafRef.current = null;
@@ -265,7 +280,9 @@ export function GuessGame() {
         audio.currentTime < AUDIO_START_OFFSET - 0.1
       ) {
         audio.pause();
-        audio.currentTime = AUDIO_START_OFFSET;
+        if (audio.readyState >= 1) {
+          audio.currentTime = AUDIO_START_OFFSET;
+        }
         setPlaying(false);
         setProgress(0);
       }
@@ -279,8 +296,17 @@ export function GuessGame() {
       stopAudio();
       return;
     }
-    audio.currentTime = AUDIO_START_OFFSET;
-    audio.volume = muted ? 0 : volume;
+
+    if (audio.readyState >= 1) {
+      audio.currentTime = AUDIO_START_OFFSET;
+    }
+
+    try {
+      audio.volume = muted ? 0 : volume;
+    } catch {
+      // iOS volume guard
+    }
+
     void audio
       .play()
       .then(() => {
@@ -293,37 +319,41 @@ export function GuessGame() {
   const handlePlayClick = useCallback(() => {
     if (loadingAudio) return;
     if (!liveAudioUrl) {
-      retryCountRef.current = 0;
       shuffleTrack();
       return;
     }
     togglePlay();
   }, [loadingAudio, liveAudioUrl, shuffleTrack, togglePlay]);
 
+  // Safe MediaSession Effect (Protected against iOS WebKit crashes)
   useEffect(() => {
     if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
 
-    if (status === "playing") {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: "Mystery Track",
-        artist: "Guess That Tollywood",
-        album: "Tollywood Tune Trek",
-      });
+    try {
+      if (status === "playing") {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: "Mystery Track",
+          artist: "Guess That Tollywood",
+          album: "Tollywood Tune Trek",
+        });
 
-      navigator.mediaSession.setActionHandler("play", () => togglePlay());
-      navigator.mediaSession.setActionHandler("pause", () => stopAudio());
-
-      navigator.mediaSession.setActionHandler("seekto", null);
-      navigator.mediaSession.setActionHandler("seekforward", null);
-      navigator.mediaSession.setActionHandler("seekbackward", null);
-      navigator.mediaSession.setActionHandler("previoustrack", null);
-      navigator.mediaSession.setActionHandler("nexttrack", null);
-    } else if (song) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: song.title,
-        artist: song.singers,
-        album: song.movie,
-      });
+        const noop = () => {};
+        navigator.mediaSession.setActionHandler("play", () => togglePlay());
+        navigator.mediaSession.setActionHandler("pause", () => stopAudio());
+        navigator.mediaSession.setActionHandler("seekto", noop);
+        navigator.mediaSession.setActionHandler("seekforward", noop);
+        navigator.mediaSession.setActionHandler("seekbackward", noop);
+        navigator.mediaSession.setActionHandler("previoustrack", noop);
+        navigator.mediaSession.setActionHandler("nexttrack", noop);
+      } else if (song) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: song.title,
+          artist: song.singers,
+          album: song.movie,
+        });
+      }
+    } catch (err) {
+      console.warn("MediaSession not supported on this platform:", err);
     }
   }, [status, song, togglePlay, stopAudio]);
 
@@ -365,20 +395,24 @@ export function GuessGame() {
           pointsEarned: earned,
           day: todayKey(),
         });
-        saveStats(next);
+        try {
+          saveStats(next);
+        } catch {}
 
         if (won && typeof window !== "undefined") {
-          const savedName = localStorage.getItem(PLAYER_NAME_KEY);
-          if (savedName && song) {
-            void syncScoreToSupabase({
-              name: savedName,
-              points: next.totalScore,
-              attemptLength: attemptDuration,
-              era:
-                CATEGORIES.find((c) => c.id === category)?.label ?? "All Eras",
-              songTitle: song.title,
-            });
-          }
+          try {
+            const savedName = localStorage.getItem(PLAYER_NAME_KEY);
+            if (savedName && song) {
+              void syncScoreToSupabase({
+                name: savedName,
+                points: next.totalScore,
+                attemptLength: attemptDuration,
+                era:
+                  CATEGORIES.find((c) => c.id === category)?.label ?? "All Eras",
+                songTitle: song.title,
+              });
+            }
+          } catch {}
         }
 
         return next;
@@ -387,8 +421,12 @@ export function GuessGame() {
       const audio = audioRef.current;
       if (audio) {
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        audio.currentTime = AUDIO_START_OFFSET;
-        audio.volume = muted ? 0 : volume;
+        if (audio.readyState >= 1) {
+          audio.currentTime = AUDIO_START_OFFSET;
+        }
+        try {
+          audio.volume = muted ? 0 : volume;
+        } catch {}
         void audio
           .play()
           .then(() => {
@@ -396,7 +434,7 @@ export function GuessGame() {
             rafRef.current = requestAnimationFrame(tick);
           })
           .catch((err) => {
-            console.warn("Autoplay blocked by browser:", err);
+            console.warn("Autoplay prevented:", err);
             setPlaying(false);
           });
       }
@@ -437,7 +475,6 @@ export function GuessGame() {
     if (next.length >= MAX_ATTEMPTS) finish(false, MAX_ATTEMPTS);
   }, [attempts, status, stopAudio, finish]);
 
-  // Loading skeleton while initial catalog is fetched
   if (loadingCatalog) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
@@ -453,8 +490,9 @@ export function GuessGame() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-5 sm:pt-8">
-      {/* Auto-prompts on first visit if no name exists */}
+      {/* Auto-prompts on first visit */}
       <UsernamePromptDialog />
+
       {/* CDN Audio Stream */}
       {liveAudioUrl && (
         <audio
@@ -462,6 +500,7 @@ export function GuessGame() {
           ref={audioRef}
           src={liveAudioUrl}
           preload="auto"
+          playsInline
           onEnded={stopAudio}
           onTimeUpdate={enforceAudioBounds}
           onSeeking={enforceAudioBounds}
@@ -556,7 +595,7 @@ export function GuessGame() {
         {CATEGORIES.find((c) => c.id === category)?.subtitle}
       </p>
 
-      {/* Main Layout: Game on Left (2 cols), Result on Right (1 col) */}
+      {/* Main Layout */}
       <div className="mt-5 grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
         {/* Left Column: Game Player & Inputs */}
         <div className="relative z-20 lg:col-span-2">
@@ -774,7 +813,7 @@ export function GuessGame() {
           </motion.section>
         </div>
 
-        {/* Right Column: Song Reveal Card (or Mystery placeholder during play) */}
+        {/* Right Column: Song Reveal Card */}
         <div className="relative z-10 lg:col-span-1">
           <AnimatePresence mode="wait">
             {status !== "playing" ? (
@@ -868,7 +907,7 @@ export function GuessGame() {
           </AnimatePresence>
         </div>
       </div>
-      {/* Footer / Credits */}
+
       {/* Footer / Credits */}
       <footer className="mt-16 border-t border-border/40 pt-8 pb-6 text-center text-xs text-muted-foreground">
         <p className="flex items-center justify-center gap-1.5 font-medium">
@@ -882,6 +921,7 @@ export function GuessGame() {
           </span>
         </p>
       </footer>
+
       {/* Vercel Analytics */}
       <Analytics />
     </div>

@@ -2267,15 +2267,7 @@
     "singers": "Shweta Mohan",
     "category": "twenty-twenties"
   },
-  {
-    "id": "t259",
-    "title": "World of KA",
-    "movie": "KA",
-    "year": 2024,
-    "composer": "Sam CS",
-    "singers": "Sam CS",
-    "category": "twenty-twenties"
-  },
+  
   {
     "id": "t260",
     "title": "Ka Mass Anthem",
@@ -2374,15 +2366,6 @@
     "year": 2024,
     "composer": "Anudeep Dev",
     "singers": "Armaan Malik",
-    "category": "twenty-twenties"
-  },
-  {
-    "id": "t272",
-    "title": "Chinnari Kithayya",
-    "movie": "Janaka Aithe Ganaka",
-    "year": 2024,
-    "composer": "Vijai Bulganin",
-    "singers": "Kaala Bhairava",
     "category": "twenty-twenties"
   },
   {
@@ -2783,15 +2766,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t319",
-    "title": "Dasara Fire Theme",
-    "movie": "Dasara",
-    "year": 2023,
-    "composer": "Santhosh Narayanan",
-    "singers": "Santhosh Narayanan",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t320",
     "title": "Veerayya Entry Theme",
     "movie": "Waltair Veerayya",
@@ -2870,15 +2844,6 @@
     "year": 2024,
     "composer": "G.V. Prakash Kumar",
     "singers": "Dhanush, Sublahshini",
-    "category": "twenty-twenties"
-  },
-  {
-    "id": "t330",
-    "title": "Chuttamalle Trance",
-    "movie": "Devara",
-    "year": 2024,
-    "composer": "Anirudh Ravichander",
-    "singers": "Shilpa Rao",
     "category": "twenty-twenties"
   },
   {
@@ -3621,15 +3586,6 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m67",
-    "title": "Priya Priyathama",
-    "movie": "Ishq",
-    "year": 2012,
-    "composer": "Anoop Rubens",
-    "singers": "Nitin, Shravani",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m68",
     "title": "Sutiga Choodaku",
     "movie": "Ishq",
@@ -3708,15 +3664,6 @@
     "year": 2011,
     "composer": "Devi Sri Prasad",
     "singers": "Shreya Ghoshal",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m78",
-    "title": "Rao Gari Abbayi",
-    "movie": "Mr. Perfect",
-    "year": 2011,
-    "composer": "Devi Sri Prasad",
-    "singers": "Tippu, Geetha Madhuri",
     "category": "two-thousands-tens"
   },
   {
@@ -3855,15 +3802,6 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m94",
-    "title": "Cheppave Chirugaali",
-    "movie": "Okkadu",
-    "year": 2003,
-    "composer": "Mani Sharma",
-    "singers": "Udit Narayan, Sujatha",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m95",
     "title": "Sahasam Chey Ra Dimbhaka",
     "movie": "Okkadu",
@@ -3969,15 +3907,6 @@
     "year": 2018,
     "composer": "Devi Sri Prasad",
     "singers": "Kailash Kher, Divya Kumar",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m107",
-    "title": "I Don't Know",
-    "movie": "Bharat Ane Nenu",
-    "year": 2018,
-    "composer": "Devi Sri Prasad",
-    "singers": "Farhan Akhtar",
     "category": "two-thousands-tens"
   },
   {
@@ -4657,7 +4586,7 @@
   },
   {
     "id": "m186",
-    "title": "Baadshah Title",
+    "title": "Baadshah Baadshah",
     "movie": "Baadshah",
     "year": 2013,
     "composer": "Thaman S",
@@ -4881,15 +4810,6 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m211",
-    "title": "Chiru Chettulaatho",
-    "movie": "Awaara",
-    "year": 2010,
-    "composer": "Yuvan Shankar Raja",
-    "singers": "Karthik",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m212",
     "title": "Thalachi Thalachi",
     "movie": "7G Brindavan Colony",
@@ -5070,15 +4990,6 @@
     "category": "two-thousands-tens"
   },
   {
-    "id": "m232",
-    "title": "Anaganaga Aakasam Vundi",
-    "movie": "Nuvve Nuvve",
-    "year": 2002,
-    "composer": "Koti",
-    "singers": "S.P. Balasubrahmanyam, Chithra",
-    "category": "two-thousands-tens"
-  },
-  {
     "id": "m233",
     "title": "Nuvvevaru",
     "movie": "Malliswari",
@@ -5139,15 +5050,6 @@
     "year": 2004,
     "composer": "Devi Sri Prasad",
     "singers": "Mano",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m240",
-    "title": "Kottu Kottu",
-    "movie": "Mass",
-    "year": 2004,
-    "composer": "Devi Sri Prasad",
-    "singers": "Tippu",
     "category": "two-thousands-tens"
   },
   {
@@ -5347,15 +5249,6 @@
     "year": 2010,
     "composer": "Devi Sri Prasad",
     "singers": "Karthik",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m265",
-    "title": "Namo Venkatesa Title",
-    "movie": "Namo Venkatesa",
-    "year": 2010,
-    "composer": "Devi Sri Prasad",
-    "singers": "Shankar Mahadevan",
     "category": "two-thousands-tens"
   },
   {
@@ -5689,15 +5582,6 @@
     "year": 2018,
     "composer": "Anirudh Ravichander",
     "singers": "Anirudh Ravichander",
-    "category": "two-thousands-tens"
-  },
-  {
-    "id": "m303",
-    "title": "Maa Telugu Talliki",
-    "movie": "Leader",
-    "year": 2010,
-    "composer": "Mickey J Meyer",
-    "singers": "Mickey J Meyer",
     "category": "two-thousands-tens"
   },
   {

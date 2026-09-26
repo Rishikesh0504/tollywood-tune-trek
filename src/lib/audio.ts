@@ -19,7 +19,6 @@ interface iTunesResponse {
   results: iTunesItem[];
 }
 
-// Clean titles/movies to remove brackets and punctuation
 function sanitizeText(str: string): string {
   return (str || "")
     .replace(/\(.*?\)/g, "")
@@ -29,7 +28,6 @@ function sanitizeText(str: string): string {
     .trim();
 }
 
-// Extract meaningful words (> 2 chars) for matching
 function getTitleWords(str: string): string[] {
   return sanitizeText(str)
     .toLowerCase()
@@ -37,10 +35,8 @@ function getTitleWords(str: string): string[] {
     .filter((w) => w.length > 2);
 }
 
-// Filter out tracks explicitly tagged as other language dubs
 function isWrongLanguageDub(item: iTunesItem): boolean {
-  const metadata =
-    `${item.trackName ?? ""} ${item.collectionName ?? ""}`.toLowerCase();
+  const metadata = `${item.trackName ?? ""} ${item.collectionName ?? ""}`.toLowerCase();
   const badLanguageTags = [
     "hindi",
     "tamil",
@@ -52,7 +48,6 @@ function isWrongLanguageDub(item: iTunesItem): boolean {
   return badLanguageTags.some((lang) => metadata.includes(lang));
 }
 
-// Detect instrumental themes, scores, or soundbites (e.g. "Soul of Baby")
 function isThemeTrap(trackName: string, targetTitle: string): boolean {
   const lowerTrack = (trackName || "").toLowerCase();
   const lowerTarget = (targetTitle || "").toLowerCase();
@@ -73,34 +68,65 @@ function isThemeTrap(trackName: string, targetTitle: string): boolean {
   return false;
 }
 
+// Bypasses iOS Safari ITP blocks and mobile redirects
 async function queryiTunes(searchTerm: string): Promise<iTunesItem[]> {
+  const baseParams = new URLSearchParams({
+    term: searchTerm,
+    country: "IN",
+    media: "music",
+    entity: "song",
+    limit: "8",
+  });
+  const targetUrl = `https://itunes.apple.com/search?${baseParams.toString()}`;
+
+  // 1. Direct fetch (desktop / permissive networks)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s timeout prevents hanging
-
-    const params = new URLSearchParams({
-      term: searchTerm,
-      country: "IN",
-      media: "music",
-      entity: "song",
-      limit: "8",
-    });
-
-    const res = await fetch(
-      `https://itunes.apple.com/search?${params.toString()}`,
-      {
-        signal: controller.signal,
-      },
-    );
-    clearTimeout(timeoutId);
-
-    if (!res.ok) return [];
-
-    const data: iTunesResponse = await res.json();
-    return (data.results || []).filter((track) => Boolean(track.previewUrl));
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch(targetUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data: iTunesResponse = await res.json();
+      const valid = (data.results || []).filter((t) => Boolean(t.previewUrl));
+      if (valid.length > 0) return valid;
+    }
   } catch {
-    return [];
+    // Falls through to proxy on iPhone
   }
+
+  // 2. High-speed CORS proxy (bypasses iOS WebKit CORS & mobile 302 redirects)
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
+    const res = await fetch(proxyUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data: iTunesResponse = await res.json();
+      const valid = (data.results || []).filter((t) => Boolean(t.previewUrl));
+      if (valid.length > 0) return valid;
+    }
+  } catch {
+    // Falls through to secondary backup
+  }
+
+  // 3. Secondary proxy fallback
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const backupUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+    const res = await fetch(backupUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data: iTunesResponse = await res.json();
+      const valid = (data.results || []).filter((t) => Boolean(t.previewUrl));
+      if (valid.length > 0) return valid;
+    }
+  } catch {
+    // All sources exhausted
+  }
+
+  return [];
 }
 
 export async function fetchTeluguTrack(
@@ -110,8 +136,7 @@ export async function fetchTeluguTrack(
   const title = sanitizeText(rawTitle);
   const movie = sanitizeText(rawMovie);
 
-  const queries = [`${title} ${movie} Telugu`, `${title} ${movie}`, `${title}`];
-
+  const queries = [`${title} ${movie}`, title];
   let candidates: iTunesItem[] = [];
 
   for (const q of queries) {
@@ -122,29 +147,19 @@ export async function fetchTeluguTrack(
     }
   }
 
-  if (candidates.length === 0) {
-    return null;
-  }
+  if (candidates.length === 0) return null;
 
   const targetWords = getTitleWords(rawTitle);
 
-  // 1. Sort candidates by relevance:
-  //    - Candidates whose trackName contains words from the actual title come FIRST.
-  //    - Instrumental/Theme traps (e.g., "Soul of Baby") are pushed to the very bottom.
-  //    - Wrong language dubs are pushed to the bottom.
   const scoredCandidates = candidates.map((item) => {
     let score = 0;
     const trackLower = (item.trackName || "").toLowerCase();
 
-    // Reward title word matches
     for (const word of targetWords) {
       if (trackLower.includes(word)) score += 10;
     }
 
-    // Heavy penalty for theme/OST traps like "Soul of Baby"
     if (isThemeTrap(item.trackName || "", rawTitle)) score -= 25;
-
-    // Penalty for wrong language dubs
     if (isWrongLanguageDub(item)) score -= 20;
 
     return { item, score };
@@ -152,12 +167,9 @@ export async function fetchTeluguTrack(
 
   scoredCandidates.sort((a, b) => b.score - a.score);
 
-  // Pick highest scoring candidate, or safely fall back to the first available track
   const best = scoredCandidates[0]?.item ?? candidates[0];
 
-  if (!best?.previewUrl) {
-    return null;
-  }
+  if (!best?.previewUrl) return null;
 
   const hiResPoster = best.artworkUrl100
     ? best.artworkUrl100.replace("100x100bb.jpg", "600x600bb.jpg")
