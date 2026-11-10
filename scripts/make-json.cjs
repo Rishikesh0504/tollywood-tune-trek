@@ -1303,15 +1303,6 @@ const RAW_SONGS = [
     "twenty-twenties",
   ],
   [
-    "t146",
-    "Bhoom Bhaddhal",
-    "Krack",
-    2021,
-    "Thaman S",
-    "Mangli, Simha",
-    "twenty-twenties",
-  ],
-  [
     "t147",
     "Balega Tagilavey Bangaram",
     "Krack",
@@ -1336,15 +1327,6 @@ const RAW_SONGS = [
     2021,
     "Mani Sharma",
     "Saketh, Keerthana Sharma",
-    "twenty-twenties",
-  ],
-  [
-    "t150",
-    "Nuvve Nuvve 2021",
-    "Red",
-    2021,
-    "Mani Sharma",
-    "Ramya Behara, Anurag Kulkarni",
     "twenty-twenties",
   ],
   [
@@ -2673,15 +2655,6 @@ const RAW_SONGS = [
     "twenty-twenties",
   ],
   [
-    "t309",
-    "Ramana Aei",
-    "Guntur Kaaram",
-    2024,
-    "Thaman S",
-    "Thaman S",
-    "twenty-twenties",
-  ],
-  [
     "t310",
     "Chitti Trance",
     "Jathi Ratnalu",
@@ -2835,15 +2808,7 @@ const RAW_SONGS = [
     "Anirudh Ravichander",
     "twenty-twenties",
   ],
-  [
-    "t329",
-    "Golden Sparrow Telugu",
-    "Nilavuku En Mel Ennadi Kobam",
-    2024,
-    "G.V. Prakash Kumar",
-    "Dhanush, Sublahshini",
-    "twenty-twenties",
-  ],
+  
   [
     "t331",
     "Aasa Kooda Telugu",
@@ -2860,15 +2825,6 @@ const RAW_SONGS = [
     2024,
     "Sai Abhyankkar",
     "Sai Abhyankkar",
-    "twenty-twenties",
-  ],
-  [
-    "t333",
-    "Gulaebaghavali Telugu",
-    "Gulaebaghavali",
-    2020,
-    "Vivek-Mervin",
-    "Anirudh Ravichander",
     "twenty-twenties",
   ],
   [

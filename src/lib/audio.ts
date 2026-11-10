@@ -68,65 +68,55 @@ function isThemeTrap(trackName: string, targetTitle: string): boolean {
   return false;
 }
 
-// Bypasses iOS Safari ITP blocks and mobile redirects
-async function queryiTunes(searchTerm: string): Promise<iTunesItem[]> {
-  const baseParams = new URLSearchParams({
-    term: searchTerm,
-    country: "IN",
-    media: "music",
-    entity: "song",
-    limit: "8",
+// Native Apple JSONP: Connects directly to Apple without proxies and completely bypasses CORS
+function queryiTunes(searchTerm: string): Promise<iTunesItem[]> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve([]);
+      return;
+    }
+
+    const callbackName = `itunes_cb_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const script = document.createElement("script");
+
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve([]);
+    }, 4000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+      delete (window as unknown as Record<string, unknown>)[callbackName];
+    }
+
+    (window as unknown as Record<string, (data: iTunesResponse) => void>)[callbackName] = (
+      data: iTunesResponse,
+    ) => {
+      cleanup();
+      const valid = (data?.results || []).filter((t: iTunesItem) => Boolean(t.previewUrl));
+      resolve(valid);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      resolve([]);
+    };
+
+    const params = new URLSearchParams({
+      term: searchTerm,
+      country: "IN",
+      media: "music",
+      entity: "song",
+      limit: "8",
+      callback: callbackName,
+    });
+
+    script.src = `https://itunes.apple.com/search?${params.toString()}`;
+    document.head.appendChild(script);
   });
-  const targetUrl = `https://itunes.apple.com/search?${baseParams.toString()}`;
-
-  // 1. Direct fetch (desktop / permissive networks)
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
-    const res = await fetch(targetUrl, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (res.ok) {
-      const data: iTunesResponse = await res.json();
-      const valid = (data.results || []).filter((t) => Boolean(t.previewUrl));
-      if (valid.length > 0) return valid;
-    }
-  } catch {
-    // Falls through to proxy on iPhone
-  }
-
-  // 2. High-speed CORS proxy (bypasses iOS WebKit CORS & mobile 302 redirects)
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-    const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
-    const res = await fetch(proxyUrl, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (res.ok) {
-      const data: iTunesResponse = await res.json();
-      const valid = (data.results || []).filter((t) => Boolean(t.previewUrl));
-      if (valid.length > 0) return valid;
-    }
-  } catch {
-    // Falls through to secondary backup
-  }
-
-  // 3. Secondary proxy fallback
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-    const backupUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-    const res = await fetch(backupUrl, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (res.ok) {
-      const data: iTunesResponse = await res.json();
-      const valid = (data.results || []).filter((t) => Boolean(t.previewUrl));
-      if (valid.length > 0) return valid;
-    }
-  } catch {
-    // All sources exhausted
-  }
-
-  return [];
 }
 
 export async function fetchTeluguTrack(

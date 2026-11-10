@@ -1296,15 +1296,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t146",
-    "title": "Bhoom Bhaddhal",
-    "movie": "Krack",
-    "year": 2021,
-    "composer": "Thaman S",
-    "singers": "Mangli, Simha",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t147",
     "title": "Balega Tagilavey Bangaram",
     "movie": "Krack",
@@ -1329,15 +1320,6 @@
     "year": 2021,
     "composer": "Mani Sharma",
     "singers": "Saketh, Keerthana Sharma",
-    "category": "twenty-twenties"
-  },
-  {
-    "id": "t150",
-    "title": "Nuvve Nuvve 2021",
-    "movie": "Red",
-    "year": 2021,
-    "composer": "Mani Sharma",
-    "singers": "Ramya Behara, Anurag Kulkarni",
     "category": "twenty-twenties"
   },
   {
@@ -2676,15 +2658,6 @@
     "category": "twenty-twenties"
   },
   {
-    "id": "t309",
-    "title": "Ramana Aei",
-    "movie": "Guntur Kaaram",
-    "year": 2024,
-    "composer": "Thaman S",
-    "singers": "Thaman S",
-    "category": "twenty-twenties"
-  },
-  {
     "id": "t310",
     "title": "Chitti Trance",
     "movie": "Jathi Ratnalu",
@@ -2837,15 +2810,7 @@
     "singers": "Anirudh Ravichander",
     "category": "twenty-twenties"
   },
-  {
-    "id": "t329",
-    "title": "Golden Sparrow Telugu",
-    "movie": "Nilavuku En Mel Ennadi Kobam",
-    "year": 2024,
-    "composer": "G.V. Prakash Kumar",
-    "singers": "Dhanush, Sublahshini",
-    "category": "twenty-twenties"
-  },
+
   {
     "id": "t331",
     "title": "Aasa Kooda Telugu",
@@ -2862,15 +2827,6 @@
     "year": 2024,
     "composer": "Sai Abhyankkar",
     "singers": "Sai Abhyankkar",
-    "category": "twenty-twenties"
-  },
-  {
-    "id": "t333",
-    "title": "Gulaebaghavali Telugu",
-    "movie": "Gulaebaghavali",
-    "year": 2020,
-    "composer": "Vivek-Mervin",
-    "singers": "Anirudh Ravichander",
     "category": "twenty-twenties"
   },
   {
